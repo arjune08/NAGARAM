@@ -1,0 +1,424 @@
+# UrbanPulse AI — Implementation Plan (Revised)
+
+A production-quality, AI-powered Urban Infrastructure Intelligence platform aligned with UN SDG 11.  
+**Backend: Python Flask + SQLite | Frontend: Jinja2 + Vanilla CSS/JS**
+
+## Architecture Overview
+
+**Backend**: Python Flask + SQLite (SQLAlchemy ORM)  
+**Auth**: Flask-Login + Werkzeug password hashing  
+**Templates**: Jinja2 with template inheritance  
+**Frontend**: Vanilla CSS3 + JavaScript (ES6)  
+**Maps**: Leaflet.js (CDN) | **Charts**: Chart.js (CDN) | **Icons**: Lucide (CDN)  
+**Design**: Premium gov-tech aesthetic, glassmorphism, dark/light mode
+
+```mermaid
+graph TB
+    subgraph Backend["Python Flask Backend"]
+        App["app.py (Flask App Factory)"]
+        Models["models.py (SQLAlchemy)"]
+        Routes["routes/ (Blueprints)"]
+        Auth["auth.py (Flask-Login)"]
+        Seed["seed_data.py"]
+        DB[(SQLite Database)]
+    end
+
+    subgraph Frontend["Jinja2 + CSS/JS Frontend"]
+        Base["base.html (Layout)"]
+        Templates["templates/ (Jinja2)"]
+        Static["static/ (CSS + JS + Assets)"]
+    end
+
+    App --> Models
+    App --> Routes
+    Routes --> Auth
+    Models --> DB
+    Routes --> Templates
+    Templates --> Base
+    Templates --> Static
+    Seed --> DB
+```
+
+## Proposed Changes
+
+### Project Root
+
+#### [NEW] [app.py](file:///c:/Users/acer/OneDrive/Desktop/web/app.py)
+- Flask application factory
+- SQLAlchemy init, Flask-Login setup
+- Blueprint registration (auth, citizen, admin, ngo, volunteer, safety, api)
+- Error handlers (403, 404, 500)
+- Context processors (inject user role, theme, notifications into all templates)
+- CSRF protection, session config, secret key from env
+
+#### [NEW] [models.py](file:///c:/Users/acer/OneDrive/Desktop/web/models.py)
+- All SQLAlchemy models (see Database Schema below)
+- User model with Flask-Login mixin
+- Relationships, cascades, indexes
+
+#### [NEW] [config.py](file:///c:/Users/acer/OneDrive/Desktop/web/config.py)
+- Configuration classes (Dev, Prod)
+- SQLite database URI, secret key, session lifetime
+- Upload folder config, max file size
+
+#### [NEW] [seed_data.py](file:///c:/Users/acer/OneDrive/Desktop/web/seed_data.py)
+- Comprehensive synthetic city data seeder
+- 50+ infrastructure assets, 30+ complaints, 15+ maintenance records
+- Risk scores, 8 teams, traffic data, emergency events
+- 5 NGOs, 20+ volunteers, sustainability indicators
+- Demo user accounts (all 4 roles)
+- Run with `python seed_data.py`
+
+#### [NEW] [requirements.txt](file:///c:/Users/acer/OneDrive/Desktop/web/requirements.txt)
+```
+Flask==3.1.*
+Flask-SQLAlchemy==3.1.*
+Flask-Login==0.6.*
+Flask-WTF==1.2.*
+Werkzeug==3.1.*
+python-dotenv==1.1.*
+Pillow==11.*
+```
+
+#### [NEW] [.env](file:///c:/Users/acer/OneDrive/Desktop/web/.env)
+- SECRET_KEY, DATABASE_URL, FLASK_ENV, UPLOAD_FOLDER
+
+#### [NEW] [run.py](file:///c:/Users/acer/OneDrive/Desktop/web/run.py)
+- Entry point: creates app, seeds DB if empty, runs dev server
+
+---
+
+### Database Schema (20+ Tables)
+
+```mermaid
+erDiagram
+    User ||--o{ Complaint : submits
+    User ||--o{ Notification : receives
+    User ||--o{ AuditLog : triggers
+    User ||--o{ TrustedContact : manages
+    User ||--o{ VolunteerProfile : has
+    
+    Complaint ||--o{ ComplaintUpdate : has
+    Complaint }o--|| Category : belongs_to
+    Complaint }o--o| MaintenanceTeam : assigned_to
+    
+    InfrastructureAsset ||--o{ RiskAssessment : has
+    InfrastructureAsset ||--o{ MaintenanceRecord : has
+    InfrastructureAsset ||--o{ InspectionRecord : has
+    
+    MaintenanceTeam ||--o{ TeamMember : has
+    MaintenanceTeam ||--o{ MaintenanceTask : assigned
+    
+    NGOOrganization ||--o{ Initiative : creates
+    Initiative ||--o{ InitiativeTask : has
+    InitiativeTask ||--o{ VolunteerApplication : receives
+    
+    VolunteerProfile ||--o{ VolunteerApplication : submits
+    VolunteerProfile ||--o{ VolunteerSkill : has
+    
+    Zone ||--o{ TrafficData : has
+    Zone ||--o{ InfrastructureAsset : contains
+    
+    EmergencyEvent ||--o{ EmergencyAlert : generates
+    BloodDonationRequest }o--|| User : created_by
+    
+    Scenario ||--o{ ScenarioEffect : produces
+    
+    SustainabilityIndicator ||--o{ IndicatorReading : tracks
+```
+
+#### Key Tables:
+
+| Table | Purpose |
+|-------|---------|
+| `user` | All users (citizen, admin, ngo, volunteer) with role, password hash |
+| `complaint` | Citizen reports with full lifecycle status |
+| `complaint_update` | Status change history per complaint |
+| `category` | Issue categories (pothole, drainage, streetlight, etc.) |
+| `infrastructure_asset` | Roads, bridges, drains, lights, buildings |
+| `risk_assessment` | AI risk scores per asset with factors |
+| `maintenance_record` | Historical maintenance data |
+| `maintenance_team` | Teams with capacity, zone assignment |
+| `maintenance_task` | Scheduled/active maintenance work |
+| `inspection_record` | Asset inspection history |
+| `zone` | City zones/neighborhoods |
+| `traffic_data` | Zone-level traffic metrics |
+| `emergency_event` | Active/historical emergencies |
+| `emergency_alert` | Alerts sent to citizens |
+| `emergency_service` | Hospitals, fire stations, police |
+| `blood_donation_request` | Active donation needs |
+| `ngo_organization` | NGO profiles with verification |
+| `initiative` | Community initiatives by NGOs |
+| `initiative_task` | Specific tasks within initiatives |
+| `volunteer_profile` | Skills, availability, interests |
+| `volunteer_application` | Task applications |
+| `volunteer_skill` | Skill tags per volunteer |
+| `sustainability_indicator` | 18+ KPIs across 8 categories |
+| `indicator_reading` | Time-series indicator values |
+| `scenario` | Digital twin scenarios |
+| `scenario_effect` | Predicted effects per scenario |
+| `trusted_contact` | Women's safety contacts |
+| `notification` | In-app notifications |
+| `audit_log` | Admin action audit trail |
+| `resource` | Equipment, vehicles, supplies |
+
+---
+
+### Route Blueprints (`/routes/`)
+
+#### [NEW] [routes/__init__.py](file:///c:/Users/acer/OneDrive/Desktop/web/routes/__init__.py)
+- Blueprint registration helper
+
+#### [NEW] [routes/auth.py](file:///c:/Users/acer/OneDrive/Desktop/web/routes/auth.py)
+- `GET/POST /login` — Login with role-based redirect
+- `GET/POST /register` — Registration (citizen/ngo/volunteer)
+- `GET /logout` — Logout + session clear
+- Rate limiting (5 attempts / 15 min)
+- Password validation, input sanitization
+
+#### [NEW] [routes/citizen.py](file:///c:/Users/acer/OneDrive/Desktop/web/routes/citizen.py)
+- `GET /citizen/dashboard` — Citizen home
+- `GET/POST /citizen/report` — Submit new complaint
+- `GET /citizen/complaints` — My complaints list
+- `GET /citizen/complaints/<id>` — Complaint detail + timeline
+- `POST /citizen/complaints/<id>/confirm` — Confirm resolution
+- `GET /citizen/map` — City map (public info)
+- `GET /citizen/emergency` — Emergency info center
+- `GET /citizen/community` — Community initiatives
+
+#### [NEW] [routes/admin.py](file:///c:/Users/acer/OneDrive/Desktop/web/routes/admin.py)
+- `GET /admin/command-center` — Main dashboard
+- `GET /admin/issues` — All complaints management
+- `POST /admin/issues/<id>/update` — Update status, assign team
+- `GET /admin/digital-twin` — Digital twin interface
+- `POST /admin/digital-twin/simulate` — Run scenario simulation
+- `GET /admin/risk-engine` — Risk assessment view
+- `GET /admin/maintenance` — Predictive maintenance
+- `POST /admin/maintenance/schedule` — Schedule maintenance
+- `GET /admin/resources` — Resource optimization
+- `POST /admin/resources/allocate` — AI allocation
+- `GET /admin/decisions` — Decision support AI
+- `POST /admin/decisions/query` — AI query endpoint
+- `GET /admin/sustainability` — Sustainability dashboard
+- `GET /admin/data-hub` — Data integration center
+- `GET /admin/audit-log` — Audit log viewer
+
+#### [NEW] [routes/ngo.py](file:///c:/Users/acer/OneDrive/Desktop/web/routes/ngo.py)
+- `GET /ngo/dashboard` — NGO home
+- `GET/POST /ngo/initiatives` — Manage initiatives
+- `GET/POST /ngo/initiatives/<id>/tasks` — Manage tasks
+- `GET /ngo/volunteers` — Volunteer management
+- `POST /ngo/volunteers/request` — Request volunteers
+- `GET /ngo/impact` — Impact reporting
+
+#### [NEW] [routes/volunteer.py](file:///c:/Users/acer/OneDrive/Desktop/web/routes/volunteer.py)
+- `GET /volunteer/dashboard` — Volunteer home
+- `GET/POST /volunteer/profile` — Profile + skills management
+- `GET /volunteer/opportunities` — Browse matched opportunities
+- `POST /volunteer/apply/<task_id>` — Apply for task
+- `GET /volunteer/activities` — My assignments + history
+- `POST /volunteer/activities/<id>/complete` — Mark complete
+
+#### [NEW] [routes/safety.py](file:///c:/Users/acer/OneDrive/Desktop/web/routes/safety.py)
+- `GET /safety/center` — Safety dashboard
+- `POST /safety/sos` — Trigger SOS alert
+- `GET/POST /safety/contacts` — Manage trusted contacts
+- `GET /safety/services` — Nearby emergency services
+- `GET /safety/routes` — Safe route suggestions
+
+#### [NEW] [routes/api.py](file:///c:/Users/acer/OneDrive/Desktop/web/routes/api.py)
+- JSON endpoints for AJAX calls (charts, maps, real-time data)
+- `GET /api/stats` — Dashboard statistics
+- `GET /api/risk-data` — Risk scores for charts
+- `GET /api/map-data` — GeoJSON for map layers
+- `GET /api/traffic` — Traffic data
+- `GET /api/sustainability` — Indicator data
+- `GET /api/notifications` — User notifications
+- `POST /api/ai-query` — AI decision support queries
+
+---
+
+### Templates (`/templates/`)
+
+#### [NEW] [templates/base.html](file:///c:/Users/acer/OneDrive/Desktop/web/templates/base.html)
+- Master layout: `<!DOCTYPE html>`, meta tags, SEO, CDN links
+- Jinja2 blocks: `title`, `head`, `content`, `scripts`
+- Theme toggle, notification system, toast container
+
+#### [NEW] [templates/components/](file:///c:/Users/acer/OneDrive/Desktop/web/templates/components/)
+Reusable Jinja2 macros and includes:
+- `_sidebar.html` — Role-aware sidebar navigation
+- `_header.html` — Top bar with search, notifications, user menu
+- `_kpi_card.html` — KPI card macro
+- `_status_badge.html` — Status/risk badges
+- `_complaint_timeline.html` — Complaint lifecycle tracker
+- `_modal.html` — Modal wrapper
+- `_pagination.html` — Pagination controls
+- `_chart_container.html` — Chart.js wrapper
+- `_map_container.html` — Leaflet map wrapper
+- `_empty_state.html` — Empty state illustrations
+- `_toast.html` — Toast notification
+
+#### Landing & Auth Templates
+
+| Template | Purpose |
+|----------|---------|
+| `landing.html` | Public landing page with hero, features, SDG 11 |
+| `auth/login.html` | Login form with role selection |
+| `auth/register_citizen.html` | Citizen registration |
+| `auth/register_ngo.html` | NGO registration (with org details) |
+| `auth/register_volunteer.html` | Volunteer registration (with skills) |
+
+#### Citizen Templates
+
+| Template | Purpose |
+|----------|---------|
+| `citizen/dashboard.html` | Welcome, active complaints, nearby alerts |
+| `citizen/report_issue.html` | Multi-step issue report form |
+| `citizen/my_complaints.html` | Complaints list with filters |
+| `citizen/complaint_detail.html` | Detail view + lifecycle timeline |
+| `citizen/city_map.html` | Interactive public map |
+| `citizen/emergency.html` | Emergency & health info center |
+| `citizen/community.html` | Community initiatives |
+
+#### Admin Templates
+
+| Template | Purpose |
+|----------|---------|
+| `admin/command_center.html` | Main KPI dashboard |
+| `admin/issue_management.html` | Complaint management table |
+| `admin/digital_twin.html` | "What If?" simulator |
+| `admin/risk_engine.html` | Risk heatmap + asset cards |
+| `admin/predictive_maintenance.html` | Maintenance calendar + backlog |
+| `admin/resource_optimizer.html` | AI resource allocation |
+| `admin/decision_support.html` | AI chat assistant |
+| `admin/sustainability.html` | Sustainability score dashboard |
+| `admin/data_hub.html` | Data integration center |
+| `admin/audit_log.html` | Admin action log |
+
+#### NGO Templates
+
+| Template | Purpose |
+|----------|---------|
+| `ngo/dashboard.html` | NGO home with metrics |
+| `ngo/initiatives.html` | Initiative management |
+| `ngo/initiative_detail.html` | Initiative + tasks |
+| `ngo/volunteers.html` | Volunteer coordination |
+
+#### Volunteer Templates
+
+| Template | Purpose |
+|----------|---------|
+| `volunteer/dashboard.html` | Profile, schedule, stats |
+| `volunteer/opportunities.html` | Matched opportunities browser |
+| `volunteer/activities.html` | Assignments + history |
+
+#### Safety Templates
+
+| Template | Purpose |
+|----------|---------|
+| `safety/center.html` | SOS + contacts + services |
+
+---
+
+### Static Files (`/static/`)
+
+#### [NEW] CSS Design System (`/static/css/`)
+
+| File | Purpose |
+|------|---------|
+| `variables.css` | CSS custom properties (colors, spacing, typography, shadows) — light + dark themes |
+| `base.css` | Reset, global styles, scrollbars, animations |
+| `components.css` | Cards, buttons, badges, inputs, modals, KPI cards, glassmorphism, skeleton loaders, toasts |
+| `layouts.css` | Dashboard grids, sidebar layout, responsive breakpoints |
+| `pages.css` | Page-specific styles (landing hero, auth forms, map containers, etc.) |
+
+#### [NEW] JavaScript (`/static/js/`)
+
+| File | Purpose |
+|------|---------|
+| `app.js` | Theme toggle, sidebar control, toast system, global utilities |
+| `charts.js` | Chart.js initialization wrappers, consistent styling |
+| `maps.js` | Leaflet map helpers, marker factories, layer management |
+| `forms.js` | Form validation, file upload preview, location picker |
+| `notifications.js` | Notification dropdown, mark-read, polling |
+| `digital-twin.js` | Scenario builder UI, simulation controls |
+| `decision-support.js` | AI chat interface, query handling |
+| `safety.js` | SOS trigger, location sharing, trusted contacts |
+| `dashboard-charts.js` | Admin dashboard chart initialization |
+
+---
+
+### Color Palette
+
+| Token | Light Mode | Dark Mode |
+|-------|-----------|-----------|
+| `--bg-primary` | `#f8fafc` | `#0a1628` |
+| `--bg-secondary` | `#ffffff` | `#111d33` |
+| `--bg-card` | `rgba(255,255,255,0.8)` | `rgba(17,29,51,0.8)` |
+| `--text-primary` | `#0f172a` | `#f1f5f9` |
+| `--accent` | `#0891b2` | `#22d3ee` |
+| `--accent-2` | `#0e7490` | `#06b6d4` |
+| `--success` | `#059669` | `#10b981` |
+| `--warning` | `#d97706` | `#f59e0b` |
+| `--danger` | `#dc2626` | `#ef4444` |
+| `--glass` | `rgba(255,255,255,0.6)` | `rgba(255,255,255,0.05)` |
+
+---
+
+### Demo Credentials
+
+| Role | Email | Password |
+|------|-------|----------|
+| Administrator | admin@urbanpulse.ai | Admin@123 |
+| Citizen | citizen@urbanpulse.ai | Citizen@123 |
+| NGO | ngo@urbanpulse.ai | Ngo@123 |
+| Volunteer | volunteer@urbanpulse.ai | Volunteer@123 |
+
+---
+
+## Build Order
+
+1. **Foundation**: `app.py`, `config.py`, `models.py`, `requirements.txt`, `.env`
+2. **Seed Data**: `seed_data.py` — populate database with realistic demo data
+3. **Design System**: All CSS files in `/static/css/`
+4. **Base Template**: `base.html` + component macros
+5. **Auth**: Login/register routes + templates
+6. **Landing Page**: Public landing page
+7. **Admin Portal**: Command Center → all sub-modules (largest module)
+8. **Citizen Portal**: Dashboard → report → complaints → map → emergency
+9. **NGO Portal**: Dashboard → initiatives → volunteers
+10. **Volunteer Portal**: Dashboard → opportunities → activities
+11. **Women's Safety**: Safety center + SOS
+12. **API Routes**: JSON endpoints for charts/maps
+13. **Polish**: Animations, responsive, edge states, final testing
+
+---
+
+## Verification Plan
+
+### Automated Tests
+```bash
+pip install -r requirements.txt
+python seed_data.py
+python run.py
+```
+
+### Manual Verification
+1. Launch app at `http://localhost:5000`
+2. Login with all 4 demo accounts and verify correct routing
+3. Submit a citizen complaint and track through full lifecycle
+4. Admin: manage complaints, run Digital Twin simulation, view risk engine
+5. Test AI Decision Support queries
+6. NGO: create initiative, request volunteers
+7. Volunteer: browse opportunities, apply, track activities
+8. Test SOS trigger and trusted contacts
+9. Toggle dark/light mode on all pages
+10. Test responsive layout (mobile, tablet, desktop)
+11. Verify route protection (try accessing admin routes as citizen)
+
+> [!IMPORTANT]
+> **Scale**: This is a ~70+ file Python Flask application with 20+ database tables and a full premium frontend. I will build it systematically following the build order above. Each module is connected through the SQLite database and Flask's template inheritance.
+
+> [!NOTE]
+> **Dependencies**: Only standard Python packages (Flask ecosystem). Maps and charts use CDN-loaded libraries. No Node.js or npm required. Just `pip install` and `python run.py`.
