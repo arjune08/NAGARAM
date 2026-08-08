@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}AI Risk Assessment Engine - UrbanPulse AI{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between" style="margin-bottom: 1.75rem;">
+  <div>
+    <h2>AI Infrastructure Risk Assessment Engine</h2>
+    <p>Predictive failure scores generated from age, incident logs, citizen complaint density & monsoon telemetry.</p>
+  </div>
+  <span class="badge badge-critical" style="font-size: 0.8rem;"><i data-lucide="shield-alert"></i> Risk Monitor Active</span>
+</div>
+
+<!-- Risk Matrix Summary Grid -->
+<div class="grid-4" style="margin-bottom: 1.75rem;">
+  <div class="glass-card kpi-card kpi-danger">
+    <div class="kpi-title">Critical Failure Assets</div>
+    <div class="kpi-value text-danger">{{ critical_assets|length }}</div>
+    <div class="kpi-sub">Failure Probability > 75%</div>
+  </div>
+
+  <div class="glass-card kpi-card kpi-warning">
+    <div class="kpi-title">High Risk Assets</div>
+    <div class="kpi-value text-warning">{{ high_assets|length }}</div>
+    <div class="kpi-sub">Failure Probability 50% - 75%</div>
+  </div>
+
+  <div class="glass-card kpi-card kpi-primary">
+    <div class="kpi-title">Moderate Risk Assets</div>
+    <div class="kpi-value text-accent">{{ moderate_assets|length }}</div>
+    <div class="kpi-sub">Scheduled Inspections Active</div>
+  </div>
+
+  <div class="glass-card kpi-card kpi-success">
+    <div class="kpi-title">Low Risk Assets</div>
+    <div class="kpi-value text-success">{{ low_assets|length }}</div>
+    <div class="kpi-sub">Optimal Condition Score</div>
+  </div>
+</div>
+
+<!-- High & Critical Risk Asset Cards -->
+<div class="glass-card" style="margin-bottom: 1.75rem;">
+  <h3 style="margin-bottom: 1.25rem;">High & Critical Asset Risk Profiles</h3>
+
+  <div class="grid-2">
+    {% for ast in critical_assets + high_assets %}
+    <div style="background: var(--bg-tertiary); padding: 1.25rem; border-radius: var(--radius-md); border-left: 4px solid {% if ast.risk_level == 'Critical' %}var(--danger){% else %}var(--warning){% endif %};">
+      <div class="flex items-center justify-between" style="margin-bottom: 0.5rem;">
+        <span class="text-mono" style="font-size: 0.8rem; color: var(--accent);">{{ ast.asset_code }}</span>
+        <span class="badge badge-{{ ast.risk_level.lower() }}">{{ ast.risk_level }} RISK</span>
+      </div>
+
+      <h4 style="font-size: 1.1rem;">{{ ast.name }}</h4>
+      <div style="font-size: 0.8rem; margin-top: 0.25rem;" class="text-muted">
+        Type: {{ ast.asset_type }} | Installed {{ ast.installation_year }} | {{ ast.zone.name if ast.zone else 'Zone 1' }}
+      </div>
+
+      <div style="margin: 1rem 0;" class="flex items-center gap-4">
+        <div>
+          <div style="font-size: 0.75rem;" class="text-muted">Condition Score</div>
+          <div style="font-size: 1.4rem; font-weight: 700;">{{ ast.condition_score }}%</div>
+        </div>
+        <div>
+          <div style="font-size: 0.75rem;" class="text-muted">Failure Risk Pct</div>
+          <div style="font-size: 1.4rem; font-weight: 700;" class="{% if ast.risk_level == 'Critical' %}text-danger{% else %}text-warning{% endif %}">
+            {{ ast.failure_risk_pct }}%
+          </div>
+        </div>
+      </div>
+
+      {% if ast.risks %}
+        {% set r = ast.risks[0] %}
+        <div style="background: rgba(0,0,0,0.2); padding: 0.75rem; border-radius: var(--radius-sm); font-size: 0.82rem;">
+          <div style="font-weight: 600; color: var(--accent); margin-bottom: 0.25rem;">Primary Risk Contributing Factors:</div>
+          <div>{{ r.primary_factors }}</div>
+          <div style="margin-top: 0.5rem; font-weight: 600; color: var(--warning);">Recommended Preventive Action:</div>
+          <div>{{ r.recommended_action }}</div>
+        </div>
+      {% endif %}
+
+      <div style="margin-top: 1rem; text-align: right;">
+        <a href="{{ url_for('admin.predictive_maintenance') }}" class="btn btn-primary btn-sm">Dispatch Preventive Crew</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

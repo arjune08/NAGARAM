@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Initiatives - NGO Portal{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between" style="margin-bottom: 1.75rem;">
+  <div>
+    <h2>Community Initiatives & Disaster Tasks</h2>
+    <p>Launch community drives, specify volunteer skill requirements, and track completion impact.</p>
+  </div>
+</div>
+
+<div class="grid-1-2">
+  <!-- Create Initiative Form -->
+  <div class="glass-card">
+    <h3 style="margin-bottom: 1rem;">Create New Initiative</h3>
+
+    <form action="{{ url_for('ngo.initiatives') }}" method="POST">
+      <div class="form-group">
+        <label class="form-label">Initiative Title</label>
+        <input type="text" name="title" class="form-control" placeholder="e.g. Monsoon Drainage Clearing Drive" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Location / Target Zone</label>
+        <input type="text" name="location" class="form-control" placeholder="e.g. Zone 1 Metro Outflow Gate" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Target Volunteers Needed</label>
+        <input type="number" name="target_volunteers" class="form-control" value="15" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Description & Objectives</label>
+        <textarea name="description" class="form-control" rows="4" placeholder="Describe the community drive and required skills..." required></textarea>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width: 100%;">
+        <i data-lucide="plus-circle"></i> Launch Community Initiative
+      </button>
+    </form>
+  </div>
+
+  <!-- Initiatives List -->
+  <div class="glass-card">
+    <h3 style="margin-bottom: 1rem;">Your Active Initiatives</h3>
+
+    <div class="flex flex-col gap-4">
+      {% for init in initiatives %}
+      <div style="background: var(--bg-tertiary); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
+        <div class="flex items-center justify-between" style="margin-bottom: 0.5rem;">
+          <h4 style="font-size: 1.1rem; color: var(--accent);">{{ init.title }}</h4>
+          <span class="badge badge-success">{{ init.status }}</span>
+        </div>
+        <p style="font-size: 0.85rem; margin-bottom: 0.75rem;">{{ init.description }}</p>
+
+        <div style="font-size: 0.8rem;" class="flex justify-between text-muted">
+          <span>Location: <strong>{{ init.location }}</strong></span>
+          <span>Volunteers: <strong>{{ init.current_volunteers }} / {{ init.target_volunteers }}</strong></span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

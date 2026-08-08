@@ -1,0 +1,48 @@
+<header class="top-navbar">
+  <div class="navbar-progress" id="navProgress"></div>
+
+  <div class="navbar-left">
+    <div class="breadcrumb">
+      <i data-lucide="activity" style="width:14px;height:14px;color:var(--cyan);"></i>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-current">{% block page_title %}Dashboard{% endblock %}</span>
+    </div>
+
+    <div class="system-pulse">
+      <div class="status-dot live"></div>
+      <span>All Systems Nominal</span>
+    </div>
+  </div>
+
+  <div class="navbar-right">
+    <!-- Theme toggle -->
+    <button class="btn-icon" id="themeToggleBtn" title="Toggle theme">
+      <i data-lucide="moon" id="themeIcon"></i>
+    </button>
+
+    <!-- Notification bell -->
+    <button class="btn-icon" title="Notifications" style="position:relative;" onclick="showToast('No new notifications', 'info')">
+      <i data-lucide="bell"></i>
+      {% if unread_notifications > 0 %}
+        <span style="position:absolute;top:7px;right:7px;width:7px;height:7px;background:var(--rose);border-radius:50%;border:2px solid var(--bg-secondary);box-shadow:0 0 6px var(--rose-glow);"></span>
+      {% endif %}
+    </button>
+
+    <!-- SOS -->
+    <a href="{{ url_for('safety.center') }}" class="btn btn-danger btn-sm">
+      <i data-lucide="shield-alert"></i>SOS
+    </a>
+
+    <!-- Separator -->
+    <div style="width:1px;height:28px;background:var(--border-medium);"></div>
+
+    <!-- User -->
+    <div class="flex items-center gap-2">
+      <div class="user-avatar" style="width:28px;height:28px;font-size:0.75rem;">{{ current_user.full_name[:1].upper() }}</div>
+      <div>
+        <div style="font-size:0.82rem;font-weight:700;color:var(--text-secondary);max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ current_user.full_name.split()[0] }}</div>
+        <div style="font-size:0.62rem;color:var(--cyan);text-transform:capitalize;font-weight:600;">{{ current_user.role }}</div>
+      </div>
+    </div>
+  </div>
+</header>

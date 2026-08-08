@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}Civic Data Integration - UrbanPulse AI{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between" style="margin-bottom: 1.75rem;">
+  <div>
+    <h2>Centralized Civic Data Integration Layer</h2>
+    <p>Modular data abstraction layer connecting IoT sensors, GIS mapping, citizen complaint feeds, and legacy municipal APIs.</p>
+  </div>
+  <span class="badge badge-success" style="font-size: 0.8rem;"><i data-lucide="database"></i> Data Layer Active</span>
+</div>
+
+<div class="grid-3" style="margin-bottom: 1.75rem;">
+  <div class="glass-card">
+    <div class="flex items-center justify-between" style="margin-bottom: 0.75rem;">
+      <h3 style="font-size: 1.05rem;">Citizen Report Telemetry</h3>
+      <span class="badge badge-success">ONLINE</span>
+    </div>
+    <p style="font-size: 0.85rem;">Live socket connection parsing incoming photo reports, geotags, and priority classification.</p>
+    <div style="margin-top: 1rem; font-size: 0.8rem;" class="text-muted">Status: 30 Active Tickets Ingested</div>
+  </div>
+
+  <div class="glass-card">
+    <div class="flex items-center justify-between" style="margin-bottom: 0.75rem;">
+      <h3 style="font-size: 1.05rem;">IoT Drainage & Weather Sensors</h3>
+      <span class="badge badge-success">READY</span>
+    </div>
+    <p style="font-size: 0.85rem;">MQTT telemetry parser ready for ultrasonic water level sensors and rain gauge stations.</p>
+    <div style="margin-top: 1rem; font-size: 0.8rem;" class="text-muted">Status: 42 Sensor Nodes Monitored</div>
+  </div>
+
+  <div class="glass-card">
+    <div class="flex items-center justify-between" style="margin-bottom: 0.75rem;">
+      <h3 style="font-size: 1.05rem;">GIS & Public Health Feeds</h3>
+      <span class="badge badge-success">CONNECTED</span>
+    </div>
+    <p style="font-size: 0.85rem;">Leaflet Map engine overlaying emergency shelter, hospital bed availability, and transit nodes.</p>
+    <div style="margin-top: 1rem; font-size: 0.8rem;" class="text-muted">Status: OpenStreetMap Tile Proxy Active</div>
+  </div>
+</div>
+{% endblock %}

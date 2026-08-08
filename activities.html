@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}My Volunteer Activities - UrbanPulse AI{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between" style="margin-bottom: 1.75rem;">
+  <div>
+    <h2>My Volunteer Activities & Assignments</h2>
+    <p>Track your active assignments, schedule, and mark tasks as complete.</p>
+  </div>
+</div>
+
+<div class="glass-card">
+  <h3 style="margin-bottom: 1.25rem;">Assigned Activities</h3>
+
+  <div class="table-container">
+    <table class="custom-table">
+      <thead>
+        <tr>
+          <th>Task Title</th>
+          <th>Location</th>
+          <th>Applied Date</th>
+          <th>Assignment Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for app in applications %}
+        <tr>
+          <td style="font-weight: 600;">{{ app.task.title }}</td>
+          <td>{{ app.task.location }}</td>
+          <td style="font-size: 0.8rem;" class="text-muted">{{ app.applied_at.strftime('%Y-%m-%d') }}</td>
+          <td><span class="badge badge-success">{{ app.status }}</span></td>
+          <td>
+            <button class="btn btn-secondary btn-sm" onclick="alert('Activity marked as complete!')">
+              Mark Complete
+            </button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

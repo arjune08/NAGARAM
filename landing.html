@@ -1,0 +1,293 @@
+{% extends 'base.html' %}
+{% block title %}UrbanPulse AI — Powering Tamil Nadu's Urban Future{% endblock %}
+
+{% block public_content %}
+<div class="landing-wrap bg-grid">
+
+  <!-- Aurora atmosphere -->
+  <div class="aurora aurora-1" style="position:fixed;"></div>
+  <div class="aurora aurora-2" style="position:fixed;"></div>
+  <div class="aurora aurora-3" style="position:fixed;"></div>
+
+  <!-- Navigation -->
+  <nav class="landing-nav" id="mainNav">
+    <div class="flex items-center gap-3">
+      <div class="brand-logo" style="width:34px;height:34px;font-size:1rem;">U</div>
+      <div>
+        <div class="brand-name" style="font-size:1rem;">UrbanPulse AI</div>
+        <div class="brand-sub">Tamil Nadu City Intelligence</div>
+      </div>
+    </div>
+
+    <div class="nav-links">
+      <a href="#platform"  class="nav-link">Platform</a>
+      <a href="#tn-cities" class="nav-link">TN Cities</a>
+      <a href="#modules"   class="nav-link">Modules</a>
+      <a href="#sdg"       class="nav-link">SDG 11</a>
+      <a href="#access"    class="nav-link">Access</a>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <a href="{{ url_for('auth.login') }}" class="btn btn-ghost btn-sm">Sign In</a>
+      <a href="{{ url_for('auth.register_citizen') }}" class="btn btn-primary btn-sm">Get Started</a>
+    </div>
+  </nav>
+
+  <!-- ════════ HERO ════════ -->
+  <section class="hero-section" id="platform">
+    <canvas id="particleCanvas"></canvas>
+
+    <div class="hero-content stagger">
+      <div class="hero-eyebrow anim-fade-up" style="animation-delay:0ms;">
+        <span class="hero-eyebrow-dot"></span>
+        UN SDG 11 · Tamil Nadu Smart Cities Mission
+      </div>
+
+      <h1 class="hero-title anim-fade-up" style="animation-delay:100ms;">
+        Powering Tamil Nadu's<br>Urban Intelligence
+      </h1>
+
+      <p class="hero-subtitle anim-fade-up" style="animation-delay:200ms;">
+        UrbanPulse AI is the city operating system for Tamil Nadu's 7 Smart Cities — monitoring infrastructure in Chennai, Coimbatore, Madurai, Salem, Trichy, Vellore, and Thanjavur with AI-powered risk prediction, digital twin simulation, and real-time community resilience tools.
+      </p>
+
+      <!-- TN Cities Strip -->
+      <div class="tn-badge-strip anim-fade-up" style="animation-delay:260ms;">
+        {% for city in ['Chennai', 'Coimbatore', 'Madurai', 'Salem', 'Trichy', 'Vellore', 'Thanjavur'] %}
+          <span class="tn-city-badge">{{ city }}</span>
+        {% endfor %}
+      </div>
+
+      <div class="flex items-center justify-center gap-4 anim-fade-up" style="animation-delay:320ms;">
+        <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-xl">
+          <i data-lucide="arrow-right-circle"></i>Enter Platform
+        </a>
+        <a href="#modules" class="btn btn-ghost btn-lg">
+          <i data-lucide="layers-3"></i>Explore Modules
+        </a>
+      </div>
+
+      <!-- Hero KPI Metrics -->
+      <div class="hero-metrics anim-fade-up" style="animation-delay:400ms;margin-top:4rem;">
+        <div class="hero-metric-card">
+          <div class="hero-metric-val" data-counter="{{ total_assets }}" data-suffix="+">0</div>
+          <div class="hero-metric-lbl">Assets Monitored</div>
+          <div class="hero-metric-sub">Across TN</div>
+        </div>
+        <div class="hero-metric-card">
+          <div class="hero-metric-val" data-counter="{{ resolved_complaints }}">0</div>
+          <div class="hero-metric-lbl">Issues Resolved</div>
+          <div class="hero-metric-sub">Civic Reports</div>
+        </div>
+        <div class="hero-metric-card">
+          <div class="hero-metric-val" data-counter="{{ sustainability_score }}" data-decimals="1">0</div>
+          <div class="hero-metric-lbl">SDG Score</div>
+          <div class="hero-metric-sub">TN Average</div>
+        </div>
+        <div class="hero-metric-card">
+          <div class="hero-metric-val" data-counter="94.8" data-decimals="1" data-suffix="%">0</div>
+          <div class="hero-metric-lbl">AI Accuracy</div>
+          <div class="hero-metric-sub">Failure Prediction</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Strip -->
+  <div class="stats-strip">
+    <div class="stat-pill reveal">
+      <div class="stat-num" data-counter="7">0</div>
+      <div class="stat-lbl">Smart Cities</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-pill reveal">
+      <div class="stat-num" data-counter="{{ total_assets }}">0</div>
+      <div class="stat-lbl">Infrastructure Points</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-pill reveal">
+      <div class="stat-num" data-counter="{{ total_complaints }}">0</div>
+      <div class="stat-lbl">Civic Reports</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-pill reveal">
+      <div class="stat-num" data-counter="18">0</div>
+      <div class="stat-lbl">SDG 11 Indicators</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-pill reveal">
+      <div class="stat-num" data-counter="4">0</div>
+      <div class="stat-lbl">Stakeholder Portals</div>
+    </div>
+  </div>
+
+  <!-- ════════ TN CURRENT SITUATION ════════ -->
+  <section id="tn-cities" style="padding:5rem 3rem;background:var(--bg-secondary);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+    <div class="section-center reveal">
+      <div class="section-eyebrow">Tamil Nadu — Live Intelligence</div>
+      <h2 class="section-title">Current Urban Situation</h2>
+      <p style="font-size:0.95rem;margin-top:0.75rem;">Real-time monitoring of active infrastructure challenges across Tamil Nadu's major cities.</p>
+    </div>
+
+    <div style="max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;">
+      {% set tn_alerts = [
+        ('alert-triangle', 'var(--rose)', 'var(--rose-dim)', 'Critical', 'Chennai — Cyclone Michaung Aftermath', 'CMWSSB water mains in Ambattur and Kolathur show 88-91% failure risk after sustained flooding. 3 floodgates under emergency monitoring.'),
+        ('droplets', 'var(--amber)', 'var(--amber-dim)', 'High', 'Coimbatore — Water Scarcity Alert', 'Pillur Reservoir at 38% capacity. TNAU predicts sub-critical levels by October 2026. Rationing protocol advisory issued for Saravanampatti zone.'),
+        ('wave', 'var(--amber)', 'var(--amber-dim)', 'High', 'Madurai — Vaigai Bund Deterioration', 'Vaigai River bund reinforcement overdue by 2 years. Pre-monsoon inspection flagged structural concerns in 4 sections near Teppakulam.'),
+        ('bridge', 'var(--rose)', 'var(--rose-dim)', 'High', 'Salem — Steel Flyover Fatigue', 'Fatigue cracking detected in central span joints of Ring Road Steel Flyover. Emergency load limit advisory (max 12T) in effect.'),
+        ('leaf', 'var(--emerald)', 'var(--emerald-dim)', 'Progress', 'Chennai Smart City — Metro Phase II', 'Corridor 3 construction on schedule. 14 stations targeted for commissioning by March 2027. DPR for Corridor 5 submitted to CMRL.'),
+        ('zap', 'var(--cyan)', 'var(--cyan-dim)', 'Operational', 'Coimbatore ATMS — Fully Live', 'AI-powered Adaptive Traffic Management System operational across 42 intersections in Coimbatore Smart City zone.'),
+      ] %}
+      {% for icon, col, bg, label, title, desc in tn_alerts %}
+      <div class="tn-alert reveal" style="background:{{ bg }};border-color:{{ col }}44;border-left-color:{{ col }};">
+        <i data-lucide="{{ icon }}" style="color:{{ col }};width:20px;height:20px;flex-shrink:0;margin-top:2px;"></i>
+        <div>
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.3rem;">
+            <span style="font-size:0.68rem;font-weight:800;text-transform:uppercase;letter-spacing:0.6px;color:{{ col }};">{{ label }}</span>
+            <span style="font-weight:700;font-size:0.88rem;color:var(--text-primary);">{{ title }}</span>
+          </div>
+          <p style="font-size:0.82rem;line-height:1.6;margin:0;color:var(--text-secondary);">{{ desc }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- ════════ PLATFORM MODULES ════════ -->
+  <section id="modules" style="padding:6rem 3rem;">
+    <div class="section-center reveal">
+      <div class="section-eyebrow">Platform Modules</div>
+      <h2 class="section-title">Everything a smart city needs to think ahead</h2>
+      <p style="margin-top:0.75rem;font-size:0.95rem;">From infrastructure telemetry to AI policy simulation — all connected through a single intelligence core.</p>
+    </div>
+
+    <div class="feature-grid" style="max-width:1200px;margin:0 auto;">
+      {% set modules = [
+        ('layers-3',          'var(--cyan-dim)',    'var(--cyan)',           'Urban Digital Twin',     'Simulate Madurai road closures, Chennai flood reroutes, and Salem bypass impacts before deployment. Instant before/after scenario analysis.'),
+        ('shield-alert',      'var(--rose-dim)',    'var(--rose-bright)',    'AI Risk Engine',          'ML-synthesized failure probability for every TN infrastructure asset — combining sensor telemetry, rainfall data, and maintenance history.'),
+        ('network',           'var(--emerald-dim)', 'var(--emerald-bright)', 'Resource Optimizer',     'AI dispatches Chennai CMWSSB repair crews, Coimbatore drainage teams, and NGO volunteers to the highest-impact zones automatically.'),
+        ('message-circle-code','var(--violet-dim)', 'var(--violet-bright)', 'Decision Support AI',    'Ask: "Which Coimbatore zones need flood preparation?" and get ranked, data-backed answers with explicit reasoning chains.'),
+        ('leaf',              'var(--emerald-dim)', 'var(--emerald-bright)', 'Sustainability Index',   'Track 18 UN SDG 11 KPIs — Chennai AQI, Madurai green canopy, Trichy transit adoption — with city benchmarking dashboards.'),
+        ('shield-ellipsis',   'var(--rose-dim)',    'var(--rose-bright)',    'Emergency SOS Center',   'Instant SOS with GPS dispatch, contact alerts, and real-time emergency service proximity mapping across all TN cities.'),
+      ] %}
+      {% for icon, bg, col, title, desc in modules %}
+      <div class="feature-card reveal">
+        <div class="feature-icon" style="background:{{ bg }};color:{{ col }};">
+          <i data-lucide="{{ icon }}" style="width:24px;height:24px;"></i>
+        </div>
+        <h3 class="feature-title">{{ title }}</h3>
+        <p class="feature-desc">{{ desc }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- ════════ SDG 11 ════════ -->
+  <section id="sdg" style="padding:5rem 3rem;background:var(--bg-secondary);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+    <div style="max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:center;">
+      <div>
+        <div class="section-eyebrow reveal">UN SDG 11 Alignment</div>
+        <h2 style="font-size:2rem;font-weight:900;letter-spacing:-1px;margin:0.75rem 0 1.25rem;" class="reveal">Built for Tamil Nadu's Sustainable Urban Future</h2>
+        <p style="font-size:0.94rem;margin-bottom:2rem;line-height:1.8;" class="reveal">UrbanPulse AI directly addresses SDG 11.2, 11.5, and 11.6 — improving access to safe, sustainable transport, reducing disaster risk, and cutting environmental impact across TN cities.</p>
+
+        {% for code, label, pct, col in [('11.2','Sustainable Transport Access',67,'emerald'),('11.5','Disaster Risk Reduction',82,'cyan'),('11.6','Air Quality & Waste Mgmt',71,'violet')] %}
+        <div style="margin-bottom:1.25rem;" class="reveal">
+          <div class="flex justify-between text-sm" style="margin-bottom:6px;">
+            <span class="font-semibold">Target {{ code }}: {{ label }}</span>
+            <span class="text-{{ col }} font-bold" style="font-family:var(--font-mono);">{{ pct }}%</span>
+          </div>
+          <div class="progress-wrap">
+            <div class="progress-fill {{ col }}" data-width="{{ pct }}" style="width:0%;"></div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="flex flex-col gap-3">
+        {% for name, val, trend, col in [
+          ('Chennai AQI (Annual Avg)', '48 µg/m³', '↓ Better', 'emerald'),
+          ('Renewable Energy — TN Grid', '41.2%', '↑', 'cyan'),
+          ('Solid Waste Recycled', '61.8%', '↑', 'violet'),
+          ('Public Transit Share — Chennai', '56.4%', '↑', 'blue'),
+          ('Urban Green Canopy — TN', '24.8%', '→', 'amber'),
+          ('Carbon Intensity Reduction', '18.9%', '↑', 'emerald'),
+        ] %}
+        <div class="glass-card reveal" style="padding:0.9rem 1.25rem;display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:0.87rem;font-weight:500;">{{ name }}</span>
+          <div class="flex items-center gap-2">
+            <span class="text-{{ col }} font-bold text-mono">{{ val }}</span>
+            <span class="text-{{ col }}" style="font-size:1rem;">{{ trend }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════ ROLE PORTALS ════════ -->
+  <section id="access" style="padding:6rem 3rem;">
+    <div class="section-center reveal">
+      <div class="section-eyebrow">Multi-Role Access</div>
+      <h2 class="section-title">Four portals, one unified platform</h2>
+      <p style="margin-top:0.75rem;font-size:0.95rem;">Purpose-built workspaces for every stakeholder in Tamil Nadu's urban ecosystem.</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1.25rem;max-width:1100px;margin:0 auto;">
+      {% set roles = [
+        ('🏛️', 'Administrator', 'Command Center, Digital Twin, AI Risk Engine, Resource Optimizer, Audit Trail for TN municipal authorities.', url_for('auth.login')),
+        ('🌆', 'Citizen',       'Report potholes, drainage overflow, broken streetlights. Track your complaint status in real-time.', url_for('auth.register_citizen')),
+        ('🌱', 'NGO',           'Launch community initiatives, coordinate disaster response, manage NGO volunteers across TN cities.', url_for('auth.register_ngo')),
+        ('🤝', 'Volunteer',     'Discover skill-matched opportunities. Contribute to Chennai floods response, Coimbatore drives, and more.', url_for('auth.register_volunteer')),
+      ] %}
+      {% for emoji, role, desc, link in roles %}
+      <div class="role-card reveal">
+        <span class="role-emoji">{{ emoji }}</span>
+        <h3 class="role-title">{{ role }}</h3>
+        <p class="role-desc">{{ desc }}</p>
+        <a href="{{ link }}" class="btn btn-primary btn-full">Enter {{ role }} Portal</a>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="landing-footer">
+    <div style="max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1.5rem;">
+      <div class="flex items-center gap-3">
+        <div class="brand-logo" style="width:30px;height:30px;font-size:1rem;">U</div>
+        <div>
+          <div style="font-weight:800;font-size:0.95rem;">UrbanPulse AI</div>
+          <div style="font-size:0.72rem;color:var(--text-muted);">Tamil Nadu Smart City Intelligence Platform</div>
+        </div>
+      </div>
+      <div style="font-size:0.8rem;color:var(--text-muted);text-align:center;">
+        Aligned with UN SDG 11 — Sustainable Cities & Communities<br>
+        <span style="font-size:0.74rem;">Serving Chennai · Coimbatore · Madurai · Salem · Trichy · Vellore · Thanjavur</span>
+      </div>
+      <div class="flex gap-4 text-sm">
+        <a href="{{ url_for('auth.login') }}" class="text-muted">Sign In</a>
+        <a href="{{ url_for('auth.register_citizen') }}" class="text-muted">Register</a>
+        <a href="{{ url_for('safety.center') }}" class="text-rose">Emergency SOS</a>
+      </div>
+    </div>
+  </footer>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Particle canvas
+  if (window.UrbanParticles) {
+    UrbanParticles.init('particleCanvas', {
+      particleCount: 60,
+      connectionDist: 150,
+      pulseNodes: 8,
+      speed: 0.3,
+    });
+  }
+  // Init lucide
+  if (window.lucide) lucide.createIcons();
+});
+</script>
+{% endblock %}

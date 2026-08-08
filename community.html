@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}Community Initiatives - UrbanPulse AI{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between" style="margin-bottom: 1.75rem;">
+  <div>
+    <h2>Community Resilience Initiatives</h2>
+    <p>Discover neighborhood tree planting drives, drainage clearing drives, and local NGO activities.</p>
+  </div>
+  <a href="{{ url_for('auth.register_volunteer') }}" class="btn btn-primary">
+    <i data-lucide="user-plus"></i> Join as a Volunteer
+  </a>
+</div>
+
+<div class="grid-2">
+  {% for init in initiatives %}
+  <div class="glass-card">
+    <div class="flex items-center justify-between" style="margin-bottom: 0.5rem;">
+      <span class="badge badge-success">{{ init.status }} INITIATIVE</span>
+      <span style="font-size: 0.78rem;" class="text-muted">Led by {{ init.organization.name if init.organization else 'NGO Partner' }}</span>
+    </div>
+
+    <h3 style="font-size: 1.2rem; color: var(--accent); margin-bottom: 0.5rem;">{{ init.title }}</h3>
+    <p style="font-size: 0.88rem; margin-bottom: 1rem;">{{ init.description }}</p>
+
+    <div style="font-size: 0.8rem; margin-bottom: 1rem;" class="flex justify-between text-muted">
+      <span>Location: <strong>{{ init.location }}</strong></span>
+      <span>Volunteers: <strong>{{ init.current_volunteers }} / {{ init.target_volunteers }}</strong></span>
+    </div>
+
+    <a href="{{ url_for('auth.register_volunteer') }}" class="btn btn-secondary btn-sm" style="width: 100%;">
+      Sign Up to Help
+    </a>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

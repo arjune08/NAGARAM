@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}Predictive Maintenance - UrbanPulse AI{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between" style="margin-bottom: 1.75rem;">
+  <div>
+    <h2>Predictive Infrastructure Maintenance</h2>
+    <p>AI maintenance backlog schedule, condition monitoring, and failure probability rankings.</p>
+  </div>
+  <button class="btn btn-primary" onclick="alert('Maintenance schedule optimization complete. 4 work orders created.')">
+    <i data-lucide="refresh-cw"></i> Auto-Generate Work Orders
+  </button>
+</div>
+
+<div class="glass-card" style="margin-bottom: 1.75rem;">
+  <h3 style="margin-bottom: 1.25rem;">Asset Maintenance Priority Backlog</h3>
+
+  <div class="table-container">
+    <table class="custom-table">
+      <thead>
+        <tr>
+          <th>Asset Code</th>
+          <th>Asset Name</th>
+          <th>Type</th>
+          <th>Condition Score</th>
+          <th>Failure Risk %</th>
+          <th>Recommended Service</th>
+          <th>Priority</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in assets %}
+        <tr>
+          <td class="text-mono" style="font-weight: 700;">{{ a.asset_code }}</td>
+          <td style="font-weight: 600;">{{ a.name }}</td>
+          <td>{{ a.asset_type }}</td>
+          <td>
+            <div style="width: 100px; background: var(--bg-tertiary); height: 8px; border-radius: 4px; overflow: hidden; display: inline-block; vertical-align: middle; margin-right: 8px;">
+              <div style="width: {{ a.condition_score }}%; background: {% if a.condition_score < 50 %}var(--danger){% elif a.condition_score < 75 %}var(--warning){% else %}var(--success){% endif %}; height: 100%;"></div>
+            </div>
+            <span style="font-size: 0.8rem; font-weight: 700;">{{ a.condition_score }}%</span>
+          </td>
+          <td class="text-mono font-bold {% if a.failure_risk_pct > 60 %}text-danger{% else %}text-warning{% endif %}">
+            {{ a.failure_risk_pct }}%
+          </td>
+          <td style="font-size: 0.8rem;">{{ a.next_recommended_service.strftime('%Y-%m-%d') if a.next_recommended_service else 'Immediate' }}</td>
+          <td><span class="badge badge-{{ a.risk_level.lower() }}">{{ a.risk_level }}</span></td>
+          <td>
+            <button class="btn btn-secondary btn-sm" onclick="alert('Scheduled maintenance task for {{ a.asset_code }}')">
+              Schedule Task
+            </button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Scheduled Maintenance Work Orders -->
+<div class="glass-card">
+  <h3 style="margin-bottom: 1.25rem;">Scheduled Maintenance Calendar & Work Orders</h3>
+  <div class="grid-3">
+    {% for t in tasks %}
+    <div style="background: var(--bg-tertiary); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
+      <div class="flex items-center justify-between" style="margin-bottom: 0.5rem;">
+        <span class="badge badge-{{ t.priority.lower() }}">{{ t.priority }}</span>
+        <span class="text-muted" style="font-size: 0.75rem;">{{ t.status }}</span>
+      </div>
+      <h4 style="font-size: 1rem;">{{ t.title }}</h4>
+      <div style="font-size: 0.8rem; margin: 0.5rem 0;" class="text-muted">Location: {{ t.location }}</div>
+      <div style="font-size: 0.78rem;" class="text-accent flex items-center gap-1">
+        <i data-lucide="users" style="width: 14px; height: 14px;"></i> {{ t.team.name if t.team else 'Unassigned' }}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

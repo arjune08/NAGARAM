@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Find Volunteer Opportunities - UrbanPulse AI{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between" style="margin-bottom: 1.75rem;">
+  <div>
+    <h2>Matched Volunteer Opportunities</h2>
+    <p>Filtered by: <strong>Skills + Location + Availability + Task Requirements</strong></p>
+  </div>
+</div>
+
+<div class="grid-2">
+  {% for t in tasks %}
+  <div class="glass-card flex flex-col justify-between">
+    <div>
+      <div class="flex items-center justify-between" style="margin-bottom: 0.5rem;">
+        <span class="badge badge-success">MATCHED OPPORTUNITY</span>
+        <span style="font-size: 0.78rem;" class="text-muted">Initiative: {{ t.initiative.title if t.initiative else 'Community Drive' }}</span>
+      </div>
+
+      <h3 style="font-size: 1.2rem; color: var(--accent); margin-bottom: 0.5rem;">{{ t.title }}</h3>
+
+      <div style="font-size: 0.85rem; margin-bottom: 1rem;" class="flex flex-col gap-1 text-muted">
+        <div>Required Skill: <strong class="text-primary">{{ t.required_skill }}</strong></div>
+        <div>Location: <strong>{{ t.location }}</strong></div>
+        <div>Volunteers Needed: <strong>{{ t.needed_volunteers }}</strong></div>
+      </div>
+    </div>
+
+    {% if t.id in applied_task_ids %}
+      <button class="btn btn-secondary btn-sm" disabled style="width: 100%;">Already Applied</button>
+    {% else %}
+      <form action="{{ url_for('volunteer.apply_task', task_id=t.id) }}" method="POST">
+        <button type="submit" class="btn btn-primary btn-sm" style="width: 100%;">Apply & Volunteer</button>
+      </form>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

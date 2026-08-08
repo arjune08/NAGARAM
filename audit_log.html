@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Administrator Audit Trail - UrbanPulse AI{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between" style="margin-bottom: 1.75rem;">
+  <div>
+    <h2>Administrator Action Audit Trail</h2>
+    <p>Security logging for high-privilege municipal decisions, crew reallocations, and status overrides.</p>
+  </div>
+  <span class="badge badge-low" style="font-size: 0.8rem;"><i data-lucide="shield"></i> Security Log Active</span>
+</div>
+
+<div class="glass-card">
+  <div class="table-container">
+    <table class="custom-table">
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Administrator</th>
+          <th>Action Type</th>
+          <th>Details & Changes</th>
+          <th>IP Address</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in logs %}
+        <tr>
+          <td style="font-size: 0.8rem;" class="text-muted">{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+          <td style="font-weight: 600;">{{ log.admin_name }}</td>
+          <td><span class="badge badge-moderate">{{ log.action }}</span></td>
+          <td style="font-size: 0.85rem;">{{ log.details }}</td>
+          <td class="text-mono" style="font-size: 0.78rem;">{{ log.ip_address }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

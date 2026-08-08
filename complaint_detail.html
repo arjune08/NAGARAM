@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block title %}Ticket #{{ complaint.ticket_id }} Timeline - UrbanPulse AI{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between" style="margin-bottom: 1.75rem;">
+  <div>
+    <div style="font-size: 0.85rem;" class="text-accent text-mono">Ticket #{{ complaint.ticket_id }}</div>
+    <h2>{{ complaint.title }}</h2>
+    <p>Reported on {{ complaint.submitted_at.strftime('%B %d, %Y at %H:%M') }} | {{ complaint.location_address }}</p>
+  </div>
+
+  <div class="flex items-center gap-3">
+    <span class="badge badge-{{ complaint.priority.lower() }}">{{ complaint.priority }} Priority</span>
+    <span class="badge badge-{{ complaint.status.lower().replace(' ', '-') }}">{{ complaint.status }}</span>
+  </div>
+</div>
+
+<!-- Clear Lifecycle Status Tracker -->
+<div class="glass-card" style="margin-bottom: 1.75rem;">
+  <h3 style="margin-bottom: 1rem;">Ticket Resolution Lifecycle Progress</h3>
+
+  {% set steps = ['Submitted', 'Verified', 'Prioritized', 'Assigned', 'In Progress', 'Resolved', 'Confirmed'] %}
+  {% set status_index = {'Submitted': 0, 'Verified': 1, 'Prioritized': 2, 'Assigned': 3, 'In Progress': 4, 'Resolved': 5, 'Confirmed': 6}[complaint.status] %}
+
+  <div class="lifecycle-tracker">
+    {% for step in steps %}
+      {% set loop_idx = loop.index0 %}
+      <div class="lifecycle-step {% if loop_idx == status_index %}active{% elif loop_idx < status_index %}completed{% endif %}">
+        <div class="step-dot">
+          {% if loop_idx < status_index %}✓{% else %}{{ loop_idx + 1 }}{% endif %}
+        </div>
+        <div class="step-label">{{ step }}</div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Details & Activity History -->
+<div class="grid-2">
+  <div class="glass-card">
+    <h3 style="margin-bottom: 1rem;">Report Details</h3>
+    <div class="flex flex-col gap-3">
+      <div>
+        <div class="form-label">Category</div>
+        <div style="font-weight: 600;">{{ complaint.category.name if complaint.category else 'General' }}</div>
+      </div>
+
+      <div>
+        <div class="form-label">Description</div>
+        <p>{{ complaint.description }}</p>
+      </div>
+
+      <div>
+        <div class="form-label">Assigned Repair Team</div>
+        <div style="font-weight: 600;">
+          {% if complaint.assigned_team %}
+            {{ complaint.assigned_team.name }} ({{ complaint.assigned_team.specialty }})
+          {% else %}
+            <span class="text-muted">Awaiting Dispatch</span>
+          {% endif %}
+        </div>
+      </div>
+
+      {% if complaint.status == 'Resolved' %}
+        <div style="margin-top: 1rem; padding: 1rem; background: var(--success-light); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-md);">
+          <h4 class="text-success" style="margin-bottom: 0.5rem;">Action Completed! Please Confirm.</h4>
+          <p style="font-size: 0.88rem; margin-bottom: 0.75rem;">The repair crew has marked this issue as resolved. Please confirm if the problem is fixed.</p>
+
+          <form action="{{ url_for('citizen.confirm_resolution', id=complaint.id) }}" method="POST">
+            <textarea name="feedback" class="form-control" rows="2" placeholder="Optional citizen feedback..." style="margin-bottom: 0.75rem;"></textarea>
+            <button type="submit" class="btn btn-primary btn-sm">Confirm Resolution</button>
+          </form>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Activity Timeline Log -->
+  <div class="glass-card">
+    <h3 style="margin-bottom: 1rem;">Audit & Activity History</h3>
+    <div class="flex flex-col gap-4">
+      {% for update in complaint.updates %}
+      <div style="position: relative; padding-left: 1.5rem; border-left: 2px solid var(--accent);">
+        <div style="font-size: 0.78rem;" class="text-muted">{{ update.timestamp.strftime('%Y-%m-%d %H:%M') }}</div>
+        <div style="font-weight: 600; margin: 0.2rem 0;">Status updated to: <span class="badge badge-{{ update.status_to.lower().replace(' ', '-') }}">{{ update.status_to }}</span></div>
+        <div style="font-size: 0.85rem;" class="text-muted">{{ update.notes }}</div>
+        <div style="font-size: 0.75rem;" class="text-accent">By: {{ update.updated_by }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

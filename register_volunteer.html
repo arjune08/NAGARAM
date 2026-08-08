@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Volunteer Registration - UrbanPulse AI{% endblock %}
+
+{% block public_content %}
+<div class="flex items-center justify-center" style="min-height: 100vh; padding: 2rem; background: var(--bg-primary);">
+  <div class="glass-card" style="width: 100%; max-width: 500px; padding: 2.5rem;">
+    <div style="text-align: center; margin-bottom: 2rem;">
+      <div class="brand-logo" style="width: 44px; height: 44px; font-size: 1.5rem; margin: 0 auto 0.75rem;">U</div>
+      <h2>Join as a Volunteer</h2>
+      <p style="font-size: 0.9rem;">Contribute your skills to community resilience & civic tasks</p>
+    </div>
+
+    <form action="{{ url_for('auth.register_volunteer') }}" method="POST">
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input type="text" name="full_name" class="form-control" placeholder="David Chen" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" name="email" class="form-control" placeholder="david@example.com" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Skills & Expertise</label>
+        <input type="text" name="skills" class="form-control" placeholder="e.g. First Aid, Heavy Labor, Tree Planting, GIS" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Availability</label>
+        <select name="availability" class="form-select">
+          <option value="Weekends Only">Weekends Only</option>
+          <option value="Evenings">Evenings</option>
+          <option value="Full Availability">Full Availability</option>
+          <option value="Emergency On-Call">Emergency On-Call</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.8rem;">
+        Complete Volunteer Profile
+      </button>
+    </form>
+
+    <div style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem;" class="text-muted">
+      Already registered? <a href="{{ url_for('auth.login') }}">Sign In</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

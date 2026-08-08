@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block title %}Smart City Sustainability - UrbanPulse AI{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between" style="margin-bottom: 1.75rem;">
+  <div>
+    <h2>UN SDG 11 Urban Sustainability Index</h2>
+    <p>Track air quality, renewable energy, waste recycling, water efficiency, and green canopy cover.</p>
+  </div>
+  <div style="font-size: 1.5rem; font-weight: 800;" class="text-accent">Overall Score: 82.4 / 100</div>
+</div>
+
+<div class="grid-4" style="margin-bottom: 1.75rem;">
+  {% for ind in indicators %}
+  <div class="glass-card kpi-card kpi-{% if ind.score > 80 %}success{% elif ind.score > 70 %}warning{% else %}danger{% endif %}">
+    <div class="kpi-title">{{ ind.category }}</div>
+    <h4 style="font-size: 1rem; margin: 0.2rem 0;">{{ ind.name }}</h4>
+    <div class="kpi-value">{{ ind.value }} <span style="font-size: 0.9rem; color: var(--text-muted);">{{ ind.unit }}</span></div>
+    <div class="kpi-sub">
+      Target: <strong>{{ ind.target }} {{ ind.unit }}</strong> | Score: <strong>{{ ind.score }}/100</strong>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Comparison & Target Alignment -->
+<div class="grid-2">
+  <div class="glass-card">
+    <h3>Neighborhood Sustainability Benchmark</h3>
+    <p style="margin-bottom: 1rem;">Comparing overall sustainability index scores across all 5 municipal zones.</p>
+    <div class="table-container">
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th>Zone Name</th>
+            <th>Air Quality Index</th>
+            <th>Green Canopy %</th>
+            <th>Waste Recycle %</th>
+            <th>Overall Index</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="font-weight: 600;">Zone 1 - North Metro</td>
+            <td>44 AQI</td>
+            <td>24.5%</td>
+            <td>58.2%</td>
+            <td><span class="badge badge-moderate">78.4</span></td>
+          </tr>
+          <tr>
+            <td style="font-weight: 600;">Zone 2 - Central Downtown</td>
+            <td>38 AQI</td>
+            <td>19.8%</td>
+            <td>66.4%</td>
+            <td><span class="badge badge-moderate">82.1</span></td>
+          </tr>
+          <tr>
+            <td style="font-weight: 600;">Zone 3 - South Waterfront</td>
+            <td>28 AQI</td>
+            <td>34.1%</td>
+            <td>78.0%</td>
+            <td><span class="badge badge-success">91.0</span></td>
+          </tr>
+          <tr>
+            <td style="font-weight: 600;">Zone 4 - East Industrial Hub</td>
+            <td>68 AQI</td>
+            <td>15.2%</td>
+            <td>42.0%</td>
+            <td><span class="badge badge-critical">64.8</span></td>
+          </tr>
+          <tr>
+            <td style="font-weight: 600;">Zone 5 - West Residential Heights</td>
+            <td>32 AQI</td>
+            <td>36.8%</td>
+            <td>71.5%</td>
+            <td><span class="badge badge-success">88.5</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="glass-card">
+    <h3>UN SDG 11 Target Alignment Status</h3>
+    <div class="flex flex-col gap-4" style="margin-top: 1rem;">
+      <div>
+        <div class="flex justify-between" style="font-size: 0.85rem; margin-bottom: 0.25rem;">
+          <span>Target 11.2: Sustainable Transport Access</span>
+          <span class="font-bold text-accent">83% Achieved</span>
+        </div>
+        <div style="height: 8px; background: var(--bg-tertiary); border-radius: 4px; overflow: hidden;">
+          <div style="width: 83%; background: var(--accent); height: 100%;"></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="flex justify-between" style="font-size: 0.85rem; margin-bottom: 0.25rem;">
+          <span>Target 11.5: Reduce Disaster Loss & Flooding Risk</span>
+          <span class="font-bold text-success">89% Achieved</span>
+        </div>
+        <div style="height: 8px; background: var(--bg-tertiary); border-radius: 4px; overflow: hidden;">
+          <div style="width: 89%; background: var(--success); height: 100%;"></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="flex justify-between" style="font-size: 0.85rem; margin-bottom: 0.25rem;">
+          <span>Target 11.6: Air Quality & Waste Management</span>
+          <span class="font-bold text-warning">74% Achieved</span>
+        </div>
+        <div style="height: 8px; background: var(--bg-tertiary); border-radius: 4px; overflow: hidden;">
+          <div style="width: 74%; background: var(--warning); height: 100%;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

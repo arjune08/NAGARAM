@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block title %}500 Internal Server Error - UrbanPulse AI{% endblock %}
+
+{% block public_content %}
+<div class="flex items-center justify-center flex-col" style="min-height: 100vh; text-align: center; padding: 2rem;">
+  <div style="font-size: 5rem; font-weight: 900;" class="text-warning">500</div>
+  <h2>Internal Server Error</h2>
+  <p style="margin: 0.5rem 0 1.5rem; max-width: 450px;">Our city operating core encountered an internal anomaly. The system has automatically rolled back the transaction.</p>
+  <a href="{{ url_for('main.landing') }}" class="btn btn-primary">Return to Safety</a>
+</div>
+{% endblock %}

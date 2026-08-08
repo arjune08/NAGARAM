@@ -1,0 +1,214 @@
+/* UrbanPulse AI — Premium Design Tokens v3.0 */
+/* Tamil Nadu Smart City Intelligence Platform  */
+
+:root {
+  /* ════════ CORE BACKGROUNDS ════════ */
+  --bg-void:        #01060f;
+  --bg-primary:     #030d1a;
+  --bg-secondary:   #060f1f;
+  --bg-tertiary:    #0a1628;
+  --bg-elevated:    #0d1c32;
+  --bg-card:        rgba(6, 15, 31, 0.82);
+  --bg-card-hover:  rgba(10, 22, 44, 0.94);
+  --bg-overlay:     rgba(1, 6, 15, 0.88);
+
+  /* ════════ TEXT ════════ */
+  --text-primary:   #e8f4ff;
+  --text-secondary: #7ba4c7;
+  --text-muted:     #3d5c7a;
+  --text-disabled:  #243347;
+  --text-inverse:   #01060f;
+
+  /* ════════ BRAND ACCENT — Cyan Intelligence ════════ */
+  --cyan:           #00d4ff;
+  --cyan-bright:    #22e5ff;
+  --cyan-dim:       rgba(0, 212, 255, 0.10);
+  --cyan-glow:      rgba(0, 212, 255, 0.30);
+  --cyan-glow-lg:   rgba(0, 212, 255, 0.50);
+
+  /* ════════ VIOLET — AI / Simulation ════════ */
+  --violet:         #7c3aed;
+  --violet-bright:  #a78bfa;
+  --violet-dim:     rgba(124, 58, 237, 0.12);
+  --violet-glow:    rgba(124, 58, 237, 0.35);
+
+  /* ════════ INDIGO — Primary UI ════════ */
+  --indigo:         #4f46e5;
+  --indigo-bright:  #818cf8;
+  --indigo-dim:     rgba(79, 70, 229, 0.12);
+
+  /* ════════ EMERALD — Success / Sustainability ════════ */
+  --emerald:        #059669;
+  --emerald-bright: #34d399;
+  --emerald-dim:    rgba(5, 150, 105, 0.12);
+  --emerald-glow:   rgba(5, 150, 105, 0.30);
+
+  /* ════════ AMBER — Warning ════════ */
+  --amber:          #d97706;
+  --amber-bright:   #fbbf24;
+  --amber-dim:      rgba(217, 119, 6, 0.12);
+  --amber-glow:     rgba(217, 119, 6, 0.30);
+
+  /* ════════ ROSE — Danger / Critical ════════ */
+  --rose:           #e11d48;
+  --rose-bright:    #fb7185;
+  --rose-dim:       rgba(225, 29, 72, 0.12);
+  --rose-glow:      rgba(225, 29, 72, 0.40);
+  --rose-glow-lg:   rgba(225, 29, 72, 0.60);
+
+  /* ════════ BLUE — Data / Analytics ════════ */
+  --blue:           #2563eb;
+  --blue-bright:    #60a5fa;
+  --blue-dim:       rgba(37, 99, 235, 0.12);
+
+  /* ════════ SEMANTIC ALIASES ════════ */
+  --accent:         var(--cyan);
+  --accent-hover:   var(--cyan-bright);
+  --accent-dim:     var(--cyan-dim);
+  --accent-glow:    var(--cyan-glow);
+
+  --success:        var(--emerald);
+  --success-bright: var(--emerald-bright);
+  --success-dim:    var(--emerald-dim);
+  --success-glow:   var(--emerald-glow);
+
+  --warning:        var(--amber);
+  --warning-bright: var(--amber-bright);
+  --warning-dim:    var(--amber-dim);
+
+  --danger:         var(--rose);
+  --danger-bright:  var(--rose-bright);
+  --danger-dim:     var(--rose-dim);
+  --danger-glow:    var(--rose-glow);
+
+  /* ════════ GRADIENT PALETTE ════════ */
+  --grad-hero:        linear-gradient(135deg, #00d4ff 0%, #7c3aed 50%, #4f46e5 100%);
+  --grad-ai:          linear-gradient(135deg, #7c3aed, #00d4ff);
+  --grad-energy:      linear-gradient(135deg, #059669, #00d4ff);
+  --grad-risk:        linear-gradient(135deg, #e11d48, #d97706);
+  --grad-surface:     linear-gradient(160deg, rgba(0,212,255,0.05) 0%, rgba(124,58,237,0.04) 50%, transparent 100%);
+  --grad-card-border: linear-gradient(135deg, rgba(0,212,255,0.25), rgba(124,58,237,0.15), rgba(0,212,255,0.08));
+  --grad-sidebar:     linear-gradient(180deg, #060f1f 0%, #030d1a 100%);
+
+  /* ════════ BORDERS ════════ */
+  --border:          rgba(0, 212, 255, 0.07);
+  --border-subtle:   rgba(255, 255, 255, 0.03);
+  --border-medium:   rgba(0, 212, 255, 0.14);
+  --border-focus:    rgba(0, 212, 255, 0.60);
+  --border-danger:   rgba(225, 29, 72, 0.35);
+
+  /* ════════ GLASS SURFACES ════════ */
+  --glass-bg:        rgba(4, 12, 24, 0.75);
+  --glass-border:    rgba(0, 212, 255, 0.09);
+  --glass-shadow:    0 8px 48px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.03), inset 0 0 60px rgba(0,212,255,0.02);
+
+  /* ════════ SHADOWS ════════ */
+  --shadow-sm:       0 1px 4px rgba(0,0,0,0.4);
+  --shadow-md:       0 4px 20px rgba(0,0,0,0.6);
+  --shadow-lg:       0 12px 40px rgba(0,0,0,0.7);
+  --shadow-xl:       0 24px 64px rgba(0,0,0,0.8);
+  --shadow-cyan:     0 0 32px rgba(0,212,255,0.25), 0 0 64px rgba(0,212,255,0.10);
+  --shadow-violet:   0 0 32px rgba(124,58,237,0.30);
+  --shadow-danger:   0 0 32px rgba(225,29,72,0.40), 0 0 64px rgba(225,29,72,0.15);
+  --shadow-card:     0 4px 24px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.03);
+
+  /* ════════ TYPOGRAPHY ════════ */
+  --font-main:       'Inter', 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono:       'JetBrains Mono', 'Fira Code', monospace;
+  --font-display:    'Inter', sans-serif;
+
+  /* ════════ SPACING SCALE ════════ */
+  --s-1:  0.25rem;
+  --s-2:  0.5rem;
+  --s-3:  0.75rem;
+  --s-4:  1rem;
+  --s-5:  1.25rem;
+  --s-6:  1.5rem;
+  --s-8:  2rem;
+  --s-10: 2.5rem;
+  --s-12: 3rem;
+  --s-16: 4rem;
+  --s-20: 5rem;
+
+  /* ════════ BORDER RADIUS ════════ */
+  --r-xs:   4px;
+  --r-sm:   8px;
+  --r-md:   12px;
+  --r-lg:   18px;
+  --r-xl:   24px;
+  --r-2xl:  32px;
+  --r-full: 9999px;
+
+  /* ════════ TRANSITIONS ════════ */
+  --t-instant: 80ms  cubic-bezier(0.4, 0, 0.2, 1);
+  --t-fast:    160ms cubic-bezier(0.4, 0, 0.2, 1);
+  --t-med:     280ms cubic-bezier(0.4, 0, 0.2, 1);
+  --t-slow:    480ms cubic-bezier(0.4, 0, 0.2, 1);
+  --t-spring:  500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  --t-bounce:  600ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --t-elastic: 700ms cubic-bezier(0.25, 1.6, 0.5, 1);
+
+  /* ════════ Z-INDEX SCALE ════════ */
+  --z-base:     1;
+  --z-card:     10;
+  --z-dropdown: 100;
+  --z-sticky:   150;
+  --z-sidebar:  200;
+  --z-modal:    300;
+  --z-toast:    400;
+  --z-loader:   900;
+
+  /* ════════ BLUR ════════ */
+  --blur-sm:  blur(8px);
+  --blur-md:  blur(16px);
+  --blur-lg:  blur(32px);
+  --blur-xl:  blur(64px);
+}
+
+/* ════════ LIGHT THEME ════════ */
+[data-theme="light"] {
+  --bg-void:        #eef3ff;
+  --bg-primary:     #f5f8ff;
+  --bg-secondary:   #ffffff;
+  --bg-tertiary:    #edf2fb;
+  --bg-elevated:    #ffffff;
+  --bg-card:        rgba(255,255,255,0.95);
+  --bg-card-hover:  rgba(240,246,255,0.99);
+  --bg-overlay:     rgba(238,243,255,0.92);
+
+  --text-primary:   #0a1628;
+  --text-secondary: #2e4a6a;
+  --text-muted:     #6b8cae;
+  --text-disabled:  #b0c4d8;
+
+  --cyan:           #0284c7;
+  --cyan-bright:    #0ea5e9;
+  --cyan-dim:       rgba(2, 132, 199, 0.09);
+  --cyan-glow:      rgba(2, 132, 199, 0.20);
+
+  --border:          rgba(2, 132, 199, 0.10);
+  --border-subtle:   rgba(0, 0, 0, 0.05);
+  --border-medium:   rgba(2, 132, 199, 0.18);
+  --border-focus:    rgba(2, 132, 199, 0.55);
+
+  --glass-bg:        rgba(255,255,255,0.90);
+  --glass-border:    rgba(2,132,199,0.12);
+  --glass-shadow:    0 8px 40px rgba(10,22,40,0.07), inset 0 1px 0 rgba(255,255,255,0.9);
+
+  --shadow-md:       0 4px 20px rgba(10,22,40,0.08);
+  --shadow-lg:       0 12px 40px rgba(10,22,40,0.12);
+  --shadow-cyan:     0 0 32px rgba(2,132,199,0.15);
+  --shadow-card:     0 2px 16px rgba(10,22,40,0.06), 0 1px 0 rgba(255,255,255,0.8);
+
+  --grad-surface:    linear-gradient(160deg, rgba(2,132,199,0.04) 0%, rgba(79,70,229,0.03) 50%, transparent 100%);
+  --grad-card-border: linear-gradient(135deg, rgba(2,132,199,0.2), rgba(79,70,229,0.12), rgba(2,132,199,0.06));
+}
+
+/* ════════ REDUCED MOTION ════════ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

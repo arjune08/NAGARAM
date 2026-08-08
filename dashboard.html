@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Volunteer Dashboard - UrbanPulse AI{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between" style="margin-bottom: 1.75rem;">
+  <div>
+    <h2>Welcome, {{ current_user.full_name }}!</h2>
+    <p>Your volunteer contribution profile, matched civic tasks, and community impact record.</p>
+  </div>
+  <a href="{{ url_for('volunteer.opportunities') }}" class="btn btn-primary">
+    <i data-lucide="search"></i> Discover Opportunities
+  </a>
+</div>
+
+<div class="grid-3" style="margin-bottom: 1.75rem;">
+  <div class="glass-card kpi-card kpi-primary">
+    <div class="kpi-title">Volunteer Hours Completed</div>
+    <div class="kpi-value text-accent">{{ profile.completed_hours if profile else 18 }} Hours</div>
+    <div class="kpi-sub">Community Service Score</div>
+  </div>
+
+  <div class="glass-card kpi-card kpi-success">
+    <div class="kpi-title">Completed Tasks</div>
+    <div class="kpi-value text-success">{{ completed_count }}</div>
+    <div class="kpi-sub">Verified Impact</div>
+  </div>
+
+  <div class="glass-card kpi-card kpi-warning">
+    <div class="kpi-title">Active Applications</div>
+    <div class="kpi-value text-warning">{{ applications|length }}</div>
+    <div class="kpi-sub">Pending or Assigned</div>
+  </div>
+</div>
+
+<div class="glass-card">
+  <h3 style="margin-bottom: 1.25rem;">Your Volunteer Profile & Skills</h3>
+
+  <div class="grid-2">
+    <div>
+      <div class="form-label">Listed Skills</div>
+      <div style="font-weight: 600; margin-bottom: 1rem;">{{ profile.skills if profile else 'First Aid, Drainage Clearing, Heavy Labor' }}</div>
+
+      <div class="form-label">Availability Schedule</div>
+      <div style="font-weight: 600; margin-bottom: 1rem;">{{ profile.availability if profile else 'Weekends & Evening Hours' }}</div>
+    </div>
+
+    <div>
+      <div class="form-label">Interests</div>
+      <div style="font-weight: 600; margin-bottom: 1rem;">{{ profile.interests if profile else 'Disaster Relief, Environmental Clearing, Tree Planting' }}</div>
+
+      <div class="form-label">Preferred Location</div>
+      <div style="font-weight: 600;">{{ profile.preferred_location if profile else 'Zone 1 & Zone 2' }}</div>
+    </div>
+  </div>
+</div>
+{% endblock %}

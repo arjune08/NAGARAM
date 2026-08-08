@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}Resource Optimization - UrbanPulse AI{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between" style="margin-bottom: 1.75rem;">
+  <div>
+    <h2>Municipal Resource & Crew Optimizer</h2>
+    <p>AI engine optimizing crew dispatch based on demand, risk, location proximity, and severity.</p>
+  </div>
+  <button class="btn btn-primary" onclick="alert('AI Resource Re-allocation triggered successfully across all 5 zones.')">
+    <i data-lucide="zap"></i> Trigger AI Optimization
+  </button>
+</div>
+
+<!-- AI Recommendation Box -->
+<div style="background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.3); border-left: 5px solid var(--accent); padding: 1.25rem; border-radius: var(--radius-md); margin-bottom: 1.75rem;">
+  <div style="font-weight: 700; color: var(--accent); font-size: 1rem; margin-bottom: 0.4rem;" class="flex items-center gap-2">
+    <i data-lucide="bot"></i> AI Crew Allocation Recommendation
+  </div>
+  <p style="font-size: 0.95rem; color: var(--text-primary); margin-bottom: 1rem;">{{ recommendation }}</p>
+  <div class="flex gap-3">
+    <button class="btn btn-primary btn-sm" onclick="alert('Recommendation Accepted! Crew Alpha dispatched.')">Accept Recommendation</button>
+    <button class="btn btn-secondary btn-sm" onclick="alert('Manual Override interface active.')">Manual Override</button>
+  </div>
+</div>
+
+<!-- Maintenance Teams Capacity Grid -->
+<div class="glass-card" style="margin-bottom: 1.75rem;">
+  <h3 style="margin-bottom: 1.25rem;">Active Maintenance Teams Status</h3>
+
+  <div class="grid-3">
+    {% for team in teams %}
+    <div style="background: var(--bg-tertiary); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
+      <div class="flex items-center justify-between" style="margin-bottom: 0.5rem;">
+        <span class="badge badge-{% if team.status == 'Available' %}success{% else %}warning{% endif %}">{{ team.status }}</span>
+        <span class="text-mono" style="font-size: 0.8rem;">{{ team.members_count }} Technicians</span>
+      </div>
+
+      <h4 style="font-size: 1.1rem; color: var(--accent);">{{ team.name }}</h4>
+      <div style="font-size: 0.82rem; margin: 0.3rem 0 0.8rem;" class="text-muted">Specialty: {{ team.specialty }}</div>
+      <div style="font-size: 0.8rem;">Contact: <strong>{{ team.contact_phone }}</strong></div>
+
+      <div style="margin-top: 1rem;" class="flex justify-between items-center">
+        <span class="text-muted" style="font-size: 0.78rem;">Current Assignment: 0 Active Tasks</span>
+        <button class="btn btn-secondary btn-sm" onclick="alert('Dispatch modal opened for {{ team.name }}')">Reassign</button>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Equipment & Vehicle Inventory -->
+<div class="glass-card">
+  <h3 style="margin-bottom: 1.25rem;">Municipal Heavy Equipment & Vehicles</h3>
+
+  <div class="table-container">
+    <table class="custom-table">
+      <thead>
+        <tr>
+          <th>Resource Name</th>
+          <th>Type</th>
+          <th>Total Units</th>
+          <th>Available Units</th>
+          <th>Primary Location</th>
+          <th>Condition</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in resources %}
+        <tr>
+          <td style="font-weight: 600;">{{ r.name }}</td>
+          <td>{{ r.resource_type }}</td>
+          <td class="text-mono">{{ r.total_quantity }}</td>
+          <td class="text-mono font-bold text-accent">{{ r.available_quantity }}</td>
+          <td>{{ r.location_zone }}</td>
+          <td><span class="badge badge-success">{{ r.condition }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

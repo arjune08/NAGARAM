@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block title %}404 Page Not Found - UrbanPulse AI{% endblock %}
+
+{% block public_content %}
+<div class="flex items-center justify-center flex-col" style="min-height: 100vh; text-align: center; padding: 2rem;">
+  <div style="font-size: 5rem; font-weight: 900;" class="text-accent">404</div>
+  <h2>Resource Not Found</h2>
+  <p style="margin: 0.5rem 0 1.5rem; max-width: 450px;">The page or civic dataset you requested does not exist or has been moved.</p>
+  <a href="{{ url_for('main.landing') }}" class="btn btn-primary">Return to Home</a>
+</div>
+{% endblock %}

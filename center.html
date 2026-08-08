@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block title %}Women's Safety & Emergency Assistance - UrbanPulse AI{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between" style="margin-bottom: 1.75rem;">
+  <div>
+    <h2>Women's Safety & Emergency SOS Center</h2>
+    <p>1-Tap SOS dispatch, encrypted live location sharing with trusted contacts, and safe route guidance.</p>
+  </div>
+  <span class="badge badge-critical" style="font-size: 0.8rem;"><i data-lucide="shield"></i> Safety Guard Active</span>
+</div>
+
+<!-- Prominent SOS Dispatch Button Box -->
+<div class="glass-card sos-container" style="margin-bottom: 1.75rem;">
+  <div style="font-weight: 700; color: var(--danger); text-transform: uppercase; letter-spacing: 1px;">Emergency Assistance Dispatch</div>
+  <p style="font-size: 0.9rem; margin-top: 0.3rem;">Tap SOS below to instantly notify trusted contacts and municipal emergency response.</p>
+
+  <button class="sos-big-btn" id="sosBtn" onclick="triggerEmergencySOS()">
+    <i data-lucide="alert-triangle" style="width: 44px; height: 44px; margin-bottom: 4px;"></i>
+    SOS
+  </button>
+
+  <div id="sosStatusBox" style="display: none; padding: 1rem; background: var(--danger-light); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: var(--radius-md);" class="text-danger">
+    <div style="font-weight: 800; font-size: 1.1rem; margin-bottom: 0.4rem;">🚨 SOS ALERT DISPATCHED</div>
+    <div id="sosStatusMsg" style="font-size: 0.9rem;">Sharing encrypted GPS coordinates with trusted contacts & dispatchers...</div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <!-- Trusted Contacts Management -->
+  <div class="glass-card">
+    <div class="flex items-center justify-between" style="margin-bottom: 1rem;">
+      <h3>Trusted Contacts (Location Recipients)</h3>
+      <button class="btn btn-secondary btn-sm" onclick="document.getElementById('addContactForm').style.display = 'block'">
+        <i data-lucide="user-plus"></i> Add Contact
+      </button>
+    </div>
+
+    <!-- Add Contact Form -->
+    <div id="addContactForm" style="display: none; margin-bottom: 1.25rem; padding: 1rem; background: var(--bg-tertiary); border-radius: var(--radius-md);">
+      <form action="{{ url_for('safety.add_contact') }}" method="POST">
+        <div class="form-group">
+          <label class="form-label">Contact Name</label>
+          <input type="text" name="name" class="form-control" placeholder="Elena Vance (Mother)" required>
+        </div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">Relationship</label>
+            <input type="text" name="relationship" class="form-control" placeholder="Parent / Spouse / Friend" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone Number</label>
+            <input type="tel" name="phone" class="form-control" placeholder="+1 (555) 019-2831" required>
+          </div>
+        </div>
+        <div class="flex gap-2 justify-between">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('addContactForm').style.display = 'none'">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm">Save Contact</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="flex flex-col gap-3">
+      {% for c in contacts %}
+      <div style="background: var(--bg-tertiary); padding: 0.85rem 1rem; border-radius: var(--radius-md); border: 1px solid var(--border);" class="flex items-center justify-between">
+        <div>
+          <div style="font-weight: 600;">{{ c.name }} <span class="badge badge-low" style="font-size: 0.65rem;">{{ c.relationship }}</span></div>
+          <div style="font-size: 0.8rem;" class="text-muted">{{ c.phone }}</div>
+        </div>
+        <span class="text-success" style="font-size: 0.78rem; font-weight: 600;">✓ Active Contact</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Safe Route & Emergency Services Map -->
+  <div class="glass-card">
+    <h3 style="margin-bottom: 1rem;">Nearby Emergency Services & Safe Corridor</h3>
+    <div id="safetyMap" class="map-container" style="height: 320px;"></div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/maps.js') }}"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const map = initUrbanPulseMap('safetyMap');
+    if (map) addCityMapLayers(map);
+  });
+
+  function triggerEmergencySOS() {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser.");
+      return;
+    }
+
+    const btn = document.getElementById('sosBtn');
+    btn.style.transform = 'scale(0.95)';
+    btn.style.background = '#991b1b';
+
+    navigator.geolocation.getCurrentPosition(position => {
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+
+      fetch('/safety/sos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lat: lat, lng: lng })
+      })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('sosStatusBox').style.display = 'block';
+        document.getElementById('sosStatusMsg').innerText = data.message;
+        if (window.showToast) window.showToast('EMERGENCY SOS ALERT ACTIVATED', 'danger');
+      });
+    }, error => {
+      // Fallback location if user denies location permission
+      fetch('/safety/sos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lat: 40.7128, lng: -74.0060 })
+      })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('sosStatusBox').style.display = 'block';
+        document.getElementById('sosStatusMsg').innerText = data.message;
+        if (window.showToast) window.showToast('EMERGENCY SOS ALERT ACTIVATED', 'danger');
+      });
+    });
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Volunteer Management - NGO Portal{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between" style="margin-bottom: 1.75rem;">
+  <div>
+    <h2>Volunteer Coordination & Task Applications</h2>
+    <p>Review volunteer applications, match required skills, and assign disaster response tasks.</p>
+  </div>
+</div>
+
+<div class="glass-card">
+  <h3 style="margin-bottom: 1.25rem;">Volunteer Task Applications</h3>
+
+  <div class="table-container">
+    <table class="custom-table">
+      <thead>
+        <tr>
+          <th>Volunteer Name</th>
+          <th>Applied Task</th>
+          <th>Skills match</th>
+          <th>Applied Date</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for app in applications %}
+        <tr>
+          <td style="font-weight: 600;">{{ app.volunteer.user.full_name }}</td>
+          <td>{{ app.task.title }}</td>
+          <td style="font-size: 0.8rem;">{{ app.volunteer.skills }}</td>
+          <td style="font-size: 0.8rem;" class="text-muted">{{ app.applied_at.strftime('%Y-%m-%d') }}</td>
+          <td><span class="badge badge-success">{{ app.status }}</span></td>
+          <td>
+            <button class="btn btn-secondary btn-sm" onclick="alert('Volunteer {{ app.volunteer.user.full_name }} accepted.')">
+              Approve Assignment
+            </button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}Urban Digital Twin - UrbanPulse AI{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between" style="margin-bottom: 1.75rem;">
+  <div>
+    <h2>Urban Digital Twin & Scenario Simulator</h2>
+    <p>Simulate municipal policy decisions, road closures, traffic flow shifts, and disaster events on a virtual city twin.</p>
+  </div>
+  <span class="badge badge-success" style="font-size: 0.8rem;"><i data-lucide="cpu"></i> Active Digital Twin Engine</span>
+</div>
+
+<div class="grid-1-2" style="margin-bottom: 1.75rem;">
+  <!-- Simulation Scenario Form -->
+  <div class="glass-card">
+    <div style="font-weight: 700; font-size: 1.1rem; margin-bottom: 1rem;" class="flex items-center gap-2">
+      <i data-lucide="sliders" class="text-accent"></i>
+      <span>What-If Scenario Builder</span>
+    </div>
+
+    <form action="{{ url_for('admin.digital_twin_simulate') }}" method="POST">
+      <div class="form-group">
+        <label class="form-label">Scenario Name</label>
+        <input type="text" name="title" class="form-control" placeholder="e.g. Close 5th Ave Corridor for 30 Days" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Simulation Type</label>
+        <select name="scenario_type" class="form-select">
+          <option value="Road Closure">Road Closure & Paving Reroute</option>
+          <option value="Public Transit Reroute">Public Transit Line Modification</option>
+          <option value="Monsoon Surge Flood">Extreme Weather & Storm Surge</option>
+          <option value="Infrastructure Upgrade">Bridge Girder Reinforcement</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Target Zone</label>
+        <select class="form-select">
+          {% for z in zones %}
+            <option value="{{ z.id }}">{{ z.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Scenario Description & Parameters</label>
+        <textarea name="description" class="form-control" rows="3" placeholder="Enter closure duration, alternative bypass routes, or expected rainfall rate..."></textarea>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width: 100%;">
+        <i data-lucide="play-circle"></i> Run Digital Twin Simulation
+      </button>
+    </form>
+  </div>
+
+  <!-- Digital Twin GIS Visualizer -->
+  <div class="glass-card">
+    <div class="flex items-center justify-between" style="margin-bottom: 1rem;">
+      <h3 class="flex items-center gap-2"><i data-lucide="layers" class="text-accent"></i> Virtual City Twin Layers</h3>
+      <div class="flex gap-2">
+        <span class="badge badge-low">REAL DATA LAYER</span>
+        <span class="badge badge-critical">SIMULATED PREDICTION</span>
+      </div>
+    </div>
+    <div id="twinMap" class="map-container"></div>
+  </div>
+</div>
+
+<!-- Simulation Results & Historical Scenarios -->
+<div class="glass-card">
+  <h3 style="margin-bottom: 1.25rem;">Simulated Scenario Impact Analyses</h3>
+
+  {% for scen in scenarios %}
+  <div style="background: var(--bg-tertiary); padding: 1.25rem; border-radius: var(--radius-md); margin-bottom: 1.25rem; border: 1px solid var(--border);">
+    <div class="flex items-center justify-between" style="margin-bottom: 0.75rem;">
+      <div>
+        <h4 style="font-size: 1.1rem; color: var(--accent);">{{ scen.title }}</h4>
+        <div style="font-size: 0.8rem;" class="text-muted">{{ scen.description }} | Executed {{ scen.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+      </div>
+      <span class="badge badge-moderate">{{ scen.scenario_type }}</span>
+    </div>
+
+    <!-- Impact Cards Grid -->
+    <div class="grid-4" style="margin-top: 1rem;">
+      {% for eff in scen.effects %}
+      <div style="background: var(--bg-secondary); padding: 0.9rem; border-radius: var(--radius-sm); border-left: 3px solid {% if eff.impact_level == 'Severe' %}var(--danger){% elif eff.impact_level == 'Moderate' %}var(--warning){% else %}var(--success){% endif %};">
+        <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">{{ eff.metric_name }}</div>
+        <div style="font-size: 1.25rem; font-weight: 700; margin: 0.25rem 0;" class="text-mono">{{ eff.predicted_value }}</div>
+        <div style="font-size: 0.75rem;" class="{% if eff.impact_level == 'Severe' %}text-danger{% else %}text-warning{% endif %}">
+          Baseline: {{ eff.baseline_value }} ({{ eff.change_pct }}%)
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/maps.js') }}"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const map = initUrbanPulseMap('twinMap');
+    if (map) addCityMapLayers(map);
+  });
+</script>
+{% endblock %}

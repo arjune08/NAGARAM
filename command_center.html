@@ -1,0 +1,285 @@
+{% extends 'base.html' %}
+{% block title %}City Command Center — UrbanPulse AI{% endblock %}
+{% block page_title %}Command Center{% endblock %}
+
+{% block content %}
+
+<!-- TN Flood Alert Banner -->
+<div class="tn-flood-alert anim-fade-up" style="margin-bottom:1.5rem;">
+  <div class="tn-flood-alert-icon">
+    <i data-lucide="waves" style="width:18px;height:18px;"></i>
+  </div>
+  <div style="flex:1;">
+    <div class="flex items-center gap-2" style="margin-bottom:2px;">
+      <span class="badge badge-critical">Active Alert</span>
+      <strong style="font-size:0.9rem;">Post-Cyclone Michaung Infrastructure Watch — Chennai</strong>
+    </div>
+    <p style="font-size:0.82rem;margin:0;color:var(--text-secondary);">
+      3 floodgates in Ambattur and Kolathur under emergency monitoring. CMWSSB water main failure risk 88–91%. Real-time sensor updates every 15 min.
+    </p>
+  </div>
+  <div class="flex items-center gap-2 shrink-0">
+    <span style="font-size:0.74rem;color:var(--text-muted);">Updated 4 min ago</span>
+    <a href="{{ url_for('admin.risk_engine') }}" class="btn btn-danger btn-sm">View Risk Engine</a>
+  </div>
+</div>
+
+<!-- Page Header -->
+<div class="page-header anim-fade-up">
+  <div>
+    <div class="section-eyebrow">Administrator · Tamil Nadu</div>
+    <h2 class="page-title">City Command Center</h2>
+    <p class="text-sm text-secondary" style="margin-top:0.25rem;">
+      Real-time intelligence across Chennai, Coimbatore, Madurai, Salem, Trichy and all TN smart city zones.
+    </p>
+  </div>
+  <div class="page-header-actions">
+    <div class="ai-status">
+      <div class="ai-dot"></div>AI Engine Active
+    </div>
+    <a href="{{ url_for('admin.decision_support') }}" class="btn btn-ai">
+      <i data-lucide="message-circle-code"></i>Ask AI
+    </a>
+  </div>
+</div>
+
+<!-- KPI Cards Row -->
+<div class="grid-4 stagger" style="margin-bottom:1.75rem;">
+
+  <div class="glass-card kpi-card card-gradient-border anim-fade-up">
+    <div class="flex justify-between items-start">
+      <div style="flex:1;min-width:0;">
+        <div class="kpi-label">City Health Score</div>
+        <div class="kpi-value text-cyan" data-counter="{{ city_health_score }}" data-decimals="1">0</div>
+        <div class="kpi-meta">
+          <i data-lucide="trending-up" style="width:12px;height:12px;color:var(--emerald-bright);"></i>
+          <span class="kpi-up">+2.1 vs last month</span>
+        </div>
+      </div>
+      <div class="kpi-icon" style="background:var(--cyan-dim);color:var(--cyan);">
+        <i data-lucide="activity" style="width:20px;height:20px;"></i>
+      </div>
+    </div>
+    <div class="progress-wrap thin" style="margin-top:1rem;">
+      <div class="progress-fill" data-width="{{ city_health_score }}" style="width:0%;"></div>
+    </div>
+  </div>
+
+  <div class="glass-card kpi-card kpi-rose anim-fade-up">
+    <div class="flex justify-between items-start">
+      <div style="flex:1;min-width:0;">
+        <div class="kpi-label">Infrastructure Risk</div>
+        <div class="kpi-value text-rose" data-counter="{{ infrastructure_risk_score }}" data-decimals="1">0</div>
+        <div class="kpi-meta">
+          <span class="text-rose font-bold">{{ critical_risks }} Critical</span>
+          <span class="text-muted">·</span>
+          <span>{{ high_risks }} High</span>
+        </div>
+      </div>
+      <div class="kpi-icon" style="background:var(--rose-dim);color:var(--rose-bright);">
+        <i data-lucide="shield-alert" style="width:20px;height:20px;"></i>
+      </div>
+    </div>
+    <div class="progress-wrap thin" style="margin-top:1rem;">
+      <div class="progress-fill rose" data-width="{{ infrastructure_risk_score }}" style="width:0%;"></div>
+    </div>
+  </div>
+
+  <div class="glass-card kpi-card kpi-amber anim-fade-up">
+    <div class="flex justify-between items-start">
+      <div style="flex:1;min-width:0;">
+        <div class="kpi-label">Active Civic Issues</div>
+        <div class="kpi-value text-amber" data-counter="{{ active_issues }}">0</div>
+        <div class="kpi-meta">
+          of <strong>{{ total_issues }}</strong> total ·
+          <span style="color:var(--emerald-bright);">avg 3.4d resolve</span>
+        </div>
+      </div>
+      <div class="kpi-icon" style="background:var(--amber-dim);color:var(--amber-bright);">
+        <i data-lucide="file-warning" style="width:20px;height:20px;"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="glass-card kpi-card kpi-emerald anim-fade-up">
+    <div class="flex justify-between items-start">
+      <div style="flex:1;min-width:0;">
+        <div class="kpi-label">Repair Crews Ready</div>
+        <div class="kpi-value text-emerald" data-counter="{{ available_teams }}">0</div>
+        <div class="kpi-meta">
+          of {{ total_teams }} total ·
+          <span class="text-rose">{{ total_teams - available_teams }} dispatched</span>
+        </div>
+      </div>
+      <div class="kpi-icon" style="background:var(--emerald-dim);color:var(--emerald-bright);">
+        <i data-lucide="users-round" style="width:20px;height:20px;"></i>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Map + Charts Row -->
+<div class="grid-2-1" style="margin-bottom:1.75rem;">
+
+  <!-- Live TN Map -->
+  <div class="glass-card anim-slide-left">
+    <div class="flex items-center justify-between" style="margin-bottom:1rem;">
+      <div>
+        <div class="section-eyebrow">Infrastructure Map</div>
+        <h4 style="margin-top:0.25rem;">Tamil Nadu · Live Asset Telemetry</h4>
+      </div>
+      <div class="flex gap-2 items-center">
+        <span class="badge badge-live">Live</span>
+        <span class="badge badge-info">{{ total_issues }} assets</span>
+      </div>
+    </div>
+    <div id="commandMap" class="map-container"></div>
+  </div>
+
+  <!-- Right column charts -->
+  <div class="flex flex-col gap-4 anim-slide-right">
+    <div class="glass-card" style="flex:1;">
+      <div class="section-eyebrow" style="margin-bottom:0.5rem;">City Health Trend</div>
+      <div style="height:175px;position:relative;">
+        <canvas id="healthTrendChart"></canvas>
+      </div>
+    </div>
+    <div class="glass-card" style="flex:1;">
+      <div class="section-eyebrow" style="margin-bottom:0.5rem;">Risk Distribution</div>
+      <div style="height:155px;position:relative;">
+        <canvas id="riskDonutChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AI Recommendation Card -->
+<div class="ai-card anim-fade-up" style="margin-bottom:1.75rem;padding:1.25rem 1.5rem;">
+  <div class="flex items-start gap-3">
+    <div class="kpi-icon" style="width:40px;height:40px;background:var(--violet-dim);color:var(--violet-bright);flex-shrink:0;">
+      <i data-lucide="bot" style="width:22px;height:22px;"></i>
+    </div>
+    <div style="flex:1;">
+      <div class="flex items-center gap-2" style="margin-bottom:0.6rem;">
+        <div class="ai-status" style="font-size:0.66rem;padding:0.2rem 0.6rem;">
+          <div class="ai-dot"></div>AI Recommendation
+        </div>
+        <span style="font-size:0.75rem;color:var(--text-muted);">Generated 8 min ago · High Confidence</span>
+      </div>
+      <p style="font-size:0.9rem;color:var(--text-primary);margin:0;line-height:1.7;">
+        <strong>Immediate action recommended:</strong> Deploy Team Alpha to Ambattur Industrial Estate (Zone 2) and Team Delta to Kolathur drainage grid before next rainfall event forecast for Sunday. Estimated 78% probability of critical failure in CMWSSB mains without intervention. Priority score: 94/100.
+      </p>
+      <div class="flex items-center gap-3" style="margin-top:1rem;">
+        <div class="ai-confidence">
+          <span>Confidence:</span>
+          <div class="progress-wrap" style="width:80px;">
+            <div class="progress-fill violet" data-width="94" style="width:0%;"></div>
+          </div>
+          <span class="text-violet font-bold text-mono">94%</span>
+        </div>
+        <a href="{{ url_for('admin.decision_support') }}" class="btn btn-ai btn-sm">
+          <i data-lucide="arrow-right"></i>Full Analysis
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Issues + Critical Assets -->
+<div class="grid-2">
+
+  <!-- Recent Complaints -->
+  <div class="glass-card anim-fade-up">
+    <div class="flex items-center justify-between" style="margin-bottom:1.25rem;">
+      <div>
+        <div class="section-eyebrow">Recent Reports</div>
+        <h4 style="margin-top:0.25rem;">Citizen Complaint Inflow</h4>
+      </div>
+      <a href="{{ url_for('admin.issues') }}" class="btn btn-ghost btn-sm">
+        View All <i data-lucide="arrow-right" style="width:13px;height:13px;"></i>
+      </a>
+    </div>
+
+    <div class="flex flex-col gap-2">
+      {% for c in recent_complaints %}
+      <div class="list-row" onclick="window.location='{{ url_for('admin.issues') }}'">
+        <div style="width:4px;min-height:40px;border-radius:4px;flex-shrink:0;background:
+          {%- if c.priority == 'Critical' %}var(--rose)
+          {%- elif c.priority == 'High' %}var(--amber)
+          {%- else %}var(--cyan)
+          {%- endif %};"></div>
+        <div style="flex:1;min-width:0;">
+          <div class="truncate font-semibold text-sm">{{ c.title }}</div>
+          <div class="text-xs text-muted">{{ c.ticket_id }} · {{ c.submitted_at.strftime('%d %b, %H:%M') }}</div>
+        </div>
+        <span class="badge badge-{{ c.status.lower().replace(' ', '-') }}">{{ c.status }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Critical TN Assets -->
+  <div class="glass-card anim-fade-up">
+    <div class="flex items-center justify-between" style="margin-bottom:1.25rem;">
+      <div>
+        <div class="section-eyebrow">Predicted Failures</div>
+        <h4 style="margin-top:0.25rem;">High-Risk TN Infrastructure</h4>
+      </div>
+      <a href="{{ url_for('admin.risk_engine') }}" class="btn btn-ghost btn-sm">
+        Risk Engine <i data-lucide="arrow-right" style="width:13px;height:13px;"></i>
+      </a>
+    </div>
+
+    <div class="flex flex-col gap-2">
+      {% for a in critical_assets %}
+      <div class="list-row" onclick="window.location='{{ url_for('admin.predictive_maintenance') }}'">
+        <div class="kpi-icon" style="width:34px;height:34px;flex-shrink:0;
+          background:{%- if a.risk_level == 'Critical' %}var(--rose-dim){% else %}var(--amber-dim){% endif %};
+          color:{%- if a.risk_level == 'Critical' %}var(--rose-bright){% else %}var(--amber-bright){% endif %};">
+          <i data-lucide="{%- if a.asset_type == 'Bridge' %}bridge{%- elif a.asset_type == 'Road' %}route{%- elif a.asset_type == 'Drainage' %}droplets{%- elif a.asset_type == 'Streetlight' %}zap{%- else %}building-2{%- endif %}" style="width:16px;height:16px;"></i>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div class="truncate font-semibold text-sm">{{ a.name }}</div>
+          <div class="text-xs text-muted">{{ a.asset_code }} · {{ a.installation_year }}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div class="text-mono font-black {% if a.risk_level == 'Critical' %}text-rose{% else %}text-amber{% endif %}" style="font-size:1.1rem;">{{ a.failure_risk_pct|int }}%</div>
+          <span class="badge badge-{{ a.risk_level.lower() }}">{{ a.risk_level }}</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- TN SDG City Comparison -->
+<div class="glass-card anim-fade-up" style="margin-top:1.5rem;">
+  <div class="flex items-center justify-between" style="margin-bottom:1rem;">
+    <div>
+      <div class="section-eyebrow">SDG 11 Performance</div>
+      <h4 style="margin-top:0.25rem;">Tamil Nadu Smart Cities — SDG Score Comparison</h4>
+    </div>
+    <a href="{{ url_for('admin.sustainability') }}" class="btn btn-ghost btn-sm">
+      Sustainability <i data-lucide="arrow-right" style="width:13px;height:13px;"></i>
+    </a>
+  </div>
+  <div style="height:180px;position:relative;">
+    <canvas id="cityCompareChart"></canvas>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const map = initUrbanPulseMap('commandMap', { center: [13.0827, 80.2707], zoom: 11 });
+  if (map) addCityMapLayers(map);
+  initCityHealthChart('healthTrendChart');
+  initRiskDonutChart('riskDonutChart');
+  initCityCompareChart('cityCompareChart');
+  if (window.lucide) lucide.createIcons();
+});
+</script>
+{% endblock %}

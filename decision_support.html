@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block title %}AI Decision Support Assistant - UrbanPulse AI{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between" style="margin-bottom: 1.75rem;">
+  <div>
+    <h2>AI Civic Decision Support Assistant</h2>
+    <p>Ask natural language questions about infrastructure risk, crew allocation, and city policy impact.</p>
+  </div>
+  <span class="badge badge-success" style="font-size: 0.8rem;"><i data-lucide="bot"></i> Decision Core Online</span>
+</div>
+
+<div class="grid-1-2">
+  <!-- Pre-built Quick Question Templates -->
+  <div class="glass-card">
+    <h3 style="margin-bottom: 1rem;" class="flex items-center gap-2"><i data-lucide="help-circle" class="text-accent"></i> Quick Inquiry Presets</h3>
+    <div class="flex flex-col gap-3">
+      <button class="btn btn-secondary" style="text-align: left; justify-content: flex-start;" onclick="sendPreset('Which infrastructure requires immediate attention?')">
+        <i data-lucide="alert-circle" class="text-danger"></i> Which infrastructure requires immediate attention?
+      </button>
+      <button class="btn btn-secondary" style="text-align: left; justify-content: flex-start;" onclick="sendPreset('Where should we deploy maintenance teams today?')">
+        <i data-lucide="truck" class="text-warning"></i> Where should we deploy maintenance teams today?
+      </button>
+      <button class="btn btn-secondary" style="text-align: left; justify-content: flex-start;" onclick="sendPreset('What happens if 5th Avenue is closed for 30 days?')">
+        <i data-lucide="cpu" class="text-accent"></i> What happens if 5th Avenue is closed for 30 days?
+      </button>
+      <button class="btn btn-secondary" style="text-align: left; justify-content: flex-start;" onclick="sendPreset('Which neighborhood has the highest infrastructure risk score?')">
+        <i data-lucide="shield-alert" class="text-primary-blue"></i> Which zone has the highest infrastructure risk?
+      </button>
+    </div>
+  </div>
+
+  <!-- Interactive AI Chat Window -->
+  <div class="glass-card chat-container">
+    <div class="flex items-center justify-between" style="padding-bottom: 0.75rem; border-bottom: 1px solid var(--border);">
+      <div style="font-weight: 700;" class="flex items-center gap-2">
+        <div class="brand-logo" style="width: 28px; height: 28px; font-size: 0.9rem;">U</div>
+        <span>UrbanPulse AI Policy Assistant</span>
+      </div>
+      <span class="text-muted" style="font-size: 0.75rem;">GPT-4 Urban Analytics Engine</span>
+    </div>
+
+    <div id="chatMessages" class="chat-messages">
+      <div class="chat-bubble chat-bubble-ai">
+        Hello Dr. Vance! I am your AI Civic Decision Assistant. Ask me anything about city infrastructure risks, simulated traffic outcomes, crew dispatch recommendations, or SDG 11 indicators.
+      </div>
+    </div>
+
+    <div class="flex gap-2" style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--border);">
+      <input type="text" id="chatInput" class="form-control" placeholder="Ask a policy or infrastructure question..." onkeydown="if(event.key==='Enter') sendChatMessage()">
+      <button class="btn btn-primary" onclick="sendChatMessage()"><i data-lucide="send"></i></button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function sendPreset(questionText) {
+    document.getElementById('chatInput').value = questionText;
+    sendChatMessage();
+  }
+
+  function sendChatMessage() {
+    const input = document.getElementById('chatInput');
+    const question = input.value.trim();
+    if (!question) return;
+
+    const messages = document.getElementById('chatMessages');
+
+    // Append User Message
+    const userBubble = document.createElement('div');
+    userBubble.className = 'chat-bubble chat-bubble-user';
+    userBubble.innerText = question;
+    messages.appendChild(userBubble);
+
+    input.value = '';
+    messages.scrollTop = messages.scrollHeight;
+
+    // Send API request
+    fetch('/api/ai-query', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question: question })
+    })
+    .then(res => res.json())
+    .then(data => {
+      const aiBubble = document.createElement('div');
+      aiBubble.className = 'chat-bubble chat-bubble-ai';
+      aiBubble.innerHTML = `
+        <div>${data.answer.replace(/\n/g, '<br>')}</div>
+        <div class="ai-reasoning-box">
+          <strong>AI Reasoning & Data Sources:</strong><br>
+          ${data.reasoning}
+        </div>
+      `;
+      messages.appendChild(aiBubble);
+      messages.scrollTop = messages.scrollHeight;
+      if (window.lucide) window.lucide.createIcons();
+    });
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}Public City Infrastructure Map - UrbanPulse AI{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between" style="margin-bottom: 1.75rem;">
+  <div>
+    <h2>Interactive Public City Map</h2>
+    <p>View public facility locations, hospital bed availability, emergency shelters, and anonymized civic report markers.</p>
+  </div>
+  <div class="flex gap-2">
+    <span class="badge badge-low">CIVIC REPORTS</span>
+    <span class="badge badge-success">HOSPITALS & SHELTERS</span>
+  </div>
+</div>
+
+<div class="glass-card">
+  <div id="publicCityMap" class="map-container map-container-full"></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/maps.js') }}"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const map = initUrbanPulseMap('publicCityMap');
+    if (map) addCityMapLayers(map);
+  });
+</script>
+{% endblock %}

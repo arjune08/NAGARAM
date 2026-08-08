@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}Report Infrastructure Issue - UrbanPulse AI{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto;">
+  <div style="margin-bottom: 1.75rem;">
+    <h2>Report Public Infrastructure Problem</h2>
+    <p>Submit details, photographs, and precise location to alert city maintenance authorities.</p>
+  </div>
+
+  <div class="glass-card">
+    <form action="{{ url_for('citizen.report_issue') }}" method="POST" enctype="multipart/form-data">
+      <div class="form-group">
+        <label class="form-label">Issue Category</label>
+        <select name="category_id" class="form-select" required>
+          {% for cat in categories %}
+            <option value="{{ cat.id }}">{{ cat.name }} — {{ cat.description }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Issue Title</label>
+        <input type="text" name="title" class="form-control" placeholder="e.g. Deep pothole near school crossing" required>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Municipal Zone</label>
+          <select name="zone_id" class="form-select">
+            {% for z in zones %}
+              <option value="{{ z.id }}">{{ z.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Urgency Priority</label>
+          <select name="priority" class="form-select">
+            <option value="Low">Low — Minor cosmetic issue</option>
+            <option value="Medium" selected>Medium — Standard repair needed</option>
+            <option value="High">High — Safety risk to pedestrians/vehicles</option>
+            <option value="Critical">Critical — Immediate danger or severe blockage</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Location Address / Landmark</label>
+        <input type="text" name="address" class="form-control" placeholder="e.g. Corner of 5th Ave and 12th Street" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Detailed Description</label>
+        <textarea name="description" class="form-control" rows="4" placeholder="Describe the size, severity, and any hazards created by this problem..." required></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Upload Photograph (Optional)</label>
+        <input type="file" name="photo" class="form-control" accept="image/*">
+      </div>
+
+      <input type="hidden" name="lat" value="40.7128">
+      <input type="hidden" name="lng" value="-74.0060">
+
+      <div class="flex gap-4 justify-between" style="margin-top: 2rem;">
+        <a href="{{ url_for('citizen.dashboard') }}" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary" style="padding: 0.8rem 2rem;">
+          <i data-lucide="send"></i> Submit Civic Report
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}UrbanPulse AI — Tamil Nadu Smart City Intelligence{% endblock %}</title>
+  <meta name="description" content="{% block meta_desc %}UrbanPulse AI is Tamil Nadu's premier city operating intelligence platform — predictive infrastructure, digital twin simulation, AI decision support, and community resilience.{% endblock %}">
+  <meta name="theme-color" content="#030d1a">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='9' fill='%230284c7'/><text x='7' y='24' font-size='20' font-weight='900' fill='white'>U</text></svg>">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <!-- Design System -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/layouts.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages.css') }}">
+
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+{% if current_user.is_authenticated %}
+  {# ═══════ AUTHENTICATED SHELL ═══════ #}
+
+  <!-- Loading Screen -->
+  <div class="loading-screen" id="loadingScreen">
+    <div class="loading-logo">U</div>
+    <div class="loading-bar-wrap">
+      <div class="loading-bar-fill"></div>
+    </div>
+    <div class="loading-label loading-msg">Initializing city intelligence...</div>
+  </div>
+
+  <div class="app-shell">
+    {% include 'components/_sidebar.html' %}
+    <div class="main-content">
+      {% include 'components/_header.html' %}
+
+      <main class="page-body">
+        {# Flash messages #}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div style="margin-bottom:1.25rem;display:flex;flex-direction:column;gap:8px;">
+              {% for cat, msg in messages %}
+                <div class="toast toast-{{ cat }}">
+                  <i data-lucide="{% if cat == 'success' %}check-circle-2{% elif cat == 'danger' %}alert-triangle{% elif cat == 'warning' %}alert-circle{% else %}info{% endif %}" style="width:16px;height:16px;flex-shrink:0;"></i>
+                  <span>{{ msg }}</span>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </div>
+
+{% else %}
+  {# ═══════ PUBLIC SHELL ═══════ #}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div style="position:fixed;top:80px;right:24px;z-index:400;display:flex;flex-direction:column;gap:8px;">
+        {% for cat, msg in messages %}
+          <div class="toast toast-{{ cat }}">
+            <i data-lucide="info" style="width:15px;height:15px;"></i>
+            <span>{{ msg }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+  {% block public_content %}{% endblock %}
+{% endif %}
+
+<!-- Leaflet.js -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Particle Engine -->
+<script src="{{ url_for('static', filename='js/particles.js') }}"></script>
+<!-- Charts Engine -->
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<!-- Maps Engine -->
+<script src="{{ url_for('static', filename='js/maps.js') }}"></script>
+<!-- Core App -->
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+
+{% block extra_js %}{% endblock %}
+
+</body>
+</html>
