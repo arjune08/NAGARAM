@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, render_template
+from flask import Flask, render_template, send_from_directory
 from flask_login import LoginManager, current_user
 
 from config import Config
@@ -8,10 +8,11 @@ from models import db, User
 
 
 def create_app():
-    app = Flask(__name__)
+    # The repository keeps templates and frontend assets at the project root.
+    # Do not use Flask's default ./templates and ./static directories.
+    app = Flask(__name__, template_folder=".", static_folder=None)
 
     # Vercel's deployed filesystem is read-only except /tmp.
-    # Use a writable instance directory when running as a serverless function.
     if os.environ.get("VERCEL"):
         app.instance_path = "/tmp/urbanpulse_instance"
 
@@ -26,6 +27,15 @@ def create_app():
         )
 
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+
+    # The project stores CSS/JS files at the repository root (for example
+    # variables.css and app.js), while templates refer to /static/css/... and
+    # /static/js/.... Map those logical paths to the existing root files.
+    @app.route("/static/<path:filename>")
+    def static_files(filename):
+        if "/" in filename:
+            filename = filename.rsplit("/", 1)[-1]
+        return send_from_directory(app.root_path, filename)
 
     db.init_app(app)
 
@@ -60,9 +70,8 @@ def create_app():
     app.register_blueprint(safety_bp, url_prefix="/safety")
     app.register_blueprint(api_bp, url_prefix="/api")
 
-    # Vercel imports run.py instead of executing it as __main__, so the
-    # db.create_all() call in run.py is never reached during deployment.
-    # Create the schema here after all models have been imported.
+    # Vercel imports run.py instead of executing it as __main__, so initialize
+    # the schema here after all model modules have been imported.
     with app.app_context():
         db.create_all()
 
@@ -84,15 +93,15 @@ def create_app():
 
     @app.errorhandler(403)
     def forbidden_error(error):
-        return render_template("errors/403.html"), 403
+        return render_template("403.html"), 403
 
     @app.errorhandler(404)
     def not_found_error(error):
-        return render_template("errors/404.html"), 404
+        return render_template("404.html"), 404
 
     @app.errorhandler(500)
     def internal_error(error):
         db.session.rollback()
-        return render_template("errors/500.html"), 500
+        return render_template("500.html"), 500
 
     return app
