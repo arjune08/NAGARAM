@@ -11,7 +11,7 @@ def create_app():
     app = Flask(__name__)
 
     # Vercel's deployed filesystem is read-only except /tmp.
-    # Set instance_path before Flask-SQLAlchemy initializes the app.
+    # Use a writable instance directory when running as a serverless function.
     if os.environ.get("VERCEL"):
         app.instance_path = "/tmp/urbanpulse_instance"
 
@@ -59,6 +59,12 @@ def create_app():
     app.register_blueprint(volunteer_bp, url_prefix="/volunteer")
     app.register_blueprint(safety_bp, url_prefix="/safety")
     app.register_blueprint(api_bp, url_prefix="/api")
+
+    # Vercel imports run.py instead of executing it as __main__, so the
+    # db.create_all() call in run.py is never reached during deployment.
+    # Create the schema here after all models have been imported.
+    with app.app_context():
+        db.create_all()
 
     @app.context_processor
     def inject_globals():
