@@ -77,15 +77,15 @@ def create_app():
     # ---------------------------------------------------------
     # Register blueprints
     # ---------------------------------------------------------
-    from routes.auth import auth_bp
-    from routes.citizen import citizen_bp
-    from routes.admin import admin_bp
-    from routes.ngo import ngo_bp
-    from routes.volunteer import volunteer_bp
-    from routes.safety import safety_bp
-    from routes.api import api_bp
-    from routes.main import main_bp
-
+    from auth import auth_bp
+    from citizen import citizen_bp
+    from admin import admin_bp
+    from ngo import ngo_bp
+    from volunteer import volunteer_bp
+    from safety import safety_bp
+    from api import api_bp
+    from main import main_bp
+    
     app.register_blueprint(main_bp)
 
     app.register_blueprint(
