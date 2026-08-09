@@ -3,7 +3,7 @@ import random
 from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
-from routes.auth import role_required
+from auth import role_required
 from models import db, Complaint, ComplaintUpdate, Category, Zone, EmergencyService, BloodDonationRequest, Initiative
 from werkzeug.utils import secure_filename
 
@@ -43,7 +43,6 @@ def report_issue():
         lat = request.form.get('lat', 40.7128)
         lng = request.form.get('lng', -74.0060)
 
-        # Handle photo upload
         photo_filename = None
         if 'photo' in request.files:
             file = request.files['photo']
@@ -53,7 +52,6 @@ def report_issue():
                 file.save(upload_path)
                 photo_filename = filename
 
-        # Generate ticket ID
         tkt_id = f"TKT-2026-{random.randint(2000, 9999)}"
 
         complaint = Complaint(
@@ -74,7 +72,6 @@ def report_issue():
         db.session.add(complaint)
         db.session.commit()
 
-        # Initial lifecycle update
         update = ComplaintUpdate(
             complaint_id=complaint.id,
             status_from='',
