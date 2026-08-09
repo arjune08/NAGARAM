@@ -2,9 +2,24 @@ import os
 
 from flask import Flask, render_template, send_from_directory
 from flask_login import LoginManager, current_user
+from jinja2 import FileSystemLoader
+from jinja2.exceptions import TemplateNotFound
 
 from config import Config
 from models import db, User
+
+
+class RootTemplateLoader(FileSystemLoader):
+    """Load the repository's flat template files even when routes use old paths."""
+
+    def get_source(self, environment, template):
+        try:
+            return super().get_source(environment, template)
+        except TemplateNotFound:
+            basename = template.rsplit("/", 1)[-1]
+            if basename == template:
+                raise
+            return super().get_source(environment, basename)
 
 
 def create_app():
@@ -15,6 +30,12 @@ def create_app():
     # Vercel's deployed filesystem is read-only except /tmp.
     if os.environ.get("VERCEL"):
         app.instance_path = "/tmp/urbanpulse_instance"
+        os.makedirs(app.instance_path, exist_ok=True)
+
+    # Support both the current flat template layout and older route references
+    # such as "citizen/dashboard.html" without requiring every route module to
+    # be rewritten at once.
+    app.jinja_loader = RootTemplateLoader(app.root_path)
 
     app.config.from_object(Config)
 
