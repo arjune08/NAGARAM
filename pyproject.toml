@@ -4,11 +4,13 @@ version = "1.0.0"
 description = "UrbanPulse AI - Urban Infrastructure Intelligence Platform"
 requires-python = ">=3.11,<3.13"
 dependencies = [
-    "Flask",
-    "Flask-SQLAlchemy",
-    "Flask-CORS",
-    "Werkzeug",
-    "SQLAlchemy",
+    "Flask==3.0.3",
+    "Flask-SQLAlchemy==3.1.1",
+    "Flask-Login==0.6.3",
+    "Flask-WTF==1.2.1",
+    "Werkzeug==3.0.3",
+    "python-dotenv==1.0.1",
+    "Pillow==10.4.0"
 ]
 
 [tool.vercel]
