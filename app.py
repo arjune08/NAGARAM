@@ -8,29 +8,47 @@ from models import db, User
 
 
 def create_app():
+
+    # ---------------------------------------------------------
+    # Create Flask application
+    # ---------------------------------------------------------
     app = Flask(__name__)
+
+    # ---------------------------------------------------------
+    # Vercel instance directory
+    # ---------------------------------------------------------
+    # Flask-SQLAlchemy may create the instance directory.
+    # Vercel's /var/task directory is read-only.
+    if os.environ.get("VERCEL"):
+        app.instance_path = "/tmp/urbanpulse_instance"
+
+    # Load configuration
     app.config.from_object(Config)
 
     # ---------------------------------------------------------
     # Upload directory
     # ---------------------------------------------------------
-    # Vercel's deployed filesystem is read-only.
-    # /tmp is writable during a serverless function execution.
     if os.environ.get("VERCEL"):
+
         app.config["UPLOAD_FOLDER"] = "/tmp/urbanpulse_uploads"
 
-        # /tmp is writable on Vercel.
-        os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+        os.makedirs(
+            app.config["UPLOAD_FOLDER"],
+            exist_ok=True
+        )
 
     else:
-        # Local development
+
         app.config["UPLOAD_FOLDER"] = os.path.join(
             app.root_path,
             "static",
             "uploads"
         )
 
-        os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+        os.makedirs(
+            app.config["UPLOAD_FOLDER"],
+            exist_ok=True
+        )
 
     # ---------------------------------------------------------
     # Database
@@ -49,8 +67,10 @@ def create_app():
 
     @login_manager.user_loader
     def load_user(user_id):
+
         try:
             return User.query.get(int(user_id))
+
         except (TypeError, ValueError):
             return None
 
@@ -67,28 +87,62 @@ def create_app():
     from routes.main import main_bp
 
     app.register_blueprint(main_bp)
-    app.register_blueprint(auth_bp, url_prefix="/auth")
-    app.register_blueprint(citizen_bp, url_prefix="/citizen")
-    app.register_blueprint(admin_bp, url_prefix="/admin")
-    app.register_blueprint(ngo_bp, url_prefix="/ngo")
-    app.register_blueprint(volunteer_bp, url_prefix="/volunteer")
-    app.register_blueprint(safety_bp, url_prefix="/safety")
-    app.register_blueprint(api_bp, url_prefix="/api")
+
+    app.register_blueprint(
+        auth_bp,
+        url_prefix="/auth"
+    )
+
+    app.register_blueprint(
+        citizen_bp,
+        url_prefix="/citizen"
+    )
+
+    app.register_blueprint(
+        admin_bp,
+        url_prefix="/admin"
+    )
+
+    app.register_blueprint(
+        ngo_bp,
+        url_prefix="/ngo"
+    )
+
+    app.register_blueprint(
+        volunteer_bp,
+        url_prefix="/volunteer"
+    )
+
+    app.register_blueprint(
+        safety_bp,
+        url_prefix="/safety"
+    )
+
+    app.register_blueprint(
+        api_bp,
+        url_prefix="/api"
+    )
 
     # ---------------------------------------------------------
     # Global template variables
     # ---------------------------------------------------------
     @app.context_processor
     def inject_globals():
+
         unread_notifications = 0
 
         if current_user.is_authenticated:
+
             from models import Notification
 
-            unread_notifications = Notification.query.filter_by(
-                user_id=current_user.id,
-                is_read=False
-            ).count()
+            unread_notifications = (
+                Notification.query
+                .filter_by(
+                    user_id=current_user.id,
+                    is_read=False
+                )
+                .count()
+            )
 
         return {
             "unread_notifications": unread_notifications
@@ -99,15 +153,25 @@ def create_app():
     # ---------------------------------------------------------
     @app.errorhandler(403)
     def forbidden_error(error):
-        return render_template("errors/403.html"), 403
+
+        return render_template(
+            "errors/403.html"
+        ), 403
 
     @app.errorhandler(404)
     def not_found_error(error):
-        return render_template("errors/404.html"), 404
+
+        return render_template(
+            "errors/404.html"
+        ), 404
 
     @app.errorhandler(500)
     def internal_error(error):
+
         db.session.rollback()
-        return render_template("errors/500.html"), 500
+
+        return render_template(
+            "errors/500.html"
+        ), 500
 
     return app
