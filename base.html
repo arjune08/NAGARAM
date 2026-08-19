@@ -6,7 +6,8 @@
   <title>{% block title %}Nagaram — Tamil Nadu Smart City Intelligence{% endblock %}</title>
   <meta name="description" content="{% block meta_desc %}Nagaram is Tamil Nadu's city operating intelligence platform — predictive infrastructure, digital twin simulation, AI decision support, and community resilience.{% endblock %}">
   <meta name="theme-color" content="#030d1a">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='9' fill='%230284c7'/><text x='7' y='24' font-size='20' font-weight='900' fill='white'>N</text></svg>">
+  <link rel="icon" type="image/png" href="{{ url_for('static_files', filename='nagaram-logo.png') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static_files', filename='nagaram-logo.png') }}">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,44 +15,25 @@
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
-  <!-- Frontend assets live at the repository root; app.py maps these through /static/. -->
   <link rel="stylesheet" href="{{ url_for('static_files', filename='css/variables.css') }}">
   <link rel="stylesheet" href="{{ url_for('static_files', filename='css/base.css') }}">
   <link rel="stylesheet" href="{{ url_for('static_files', filename='css/components.css') }}">
   <link rel="stylesheet" href="{{ url_for('static_files', filename='css/layouts.css') }}">
   <link rel="stylesheet" href="{{ url_for('static_files', filename='css/pages.css') }}">
 
-  <!-- Nagaram dashboard typography: Noto Sans Tamil supports Tamil and Latin UI text. -->
   <style>
     :root {
       --font-main: 'Noto Sans Tamil', 'Inter', 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       --font-display: 'Noto Sans Tamil', 'Inter', sans-serif;
     }
+    body, button, input, textarea, select, option { font-family: var(--font-main); }
+    h1, h2, h3, h4, h5, h6 { font-family: var(--font-display); }
+    .brand-name, .brand-sub, .nav-text, .breadcrumb-current, .system-pulse, .page-body, .btn, .role-title, .feature-title { font-family: var(--font-main); }
 
-    body,
-    button,
-    input,
-    textarea,
-    select,
-    option {
-      font-family: var(--font-main);
-    }
-
-    h1, h2, h3, h4, h5, h6 {
-      font-family: var(--font-display);
-    }
-
-    .brand-name,
-    .brand-sub,
-    .nav-text,
-    .breadcrumb-current,
-    .system-pulse,
-    .page-body,
-    .btn,
-    .role-title,
-    .feature-title {
-      font-family: var(--font-main);
-    }
+    .brand-logo-image { display:flex !important; align-items:center; justify-content:center; overflow:hidden; background:transparent !important; padding:0 !important; }
+    .brand-logo-image img { width:100%; height:100%; display:block; object-fit:contain; object-position:center; image-rendering:auto; }
+    .loading-logo-image { width:72px; height:72px; margin:0 auto 1rem; }
+    .loading-logo-image img { width:100%; height:100%; object-fit:contain; display:block; }
   </style>
 
   {% block extra_css %}{% endblock %}
@@ -60,7 +42,9 @@
 
 {% if current_user.is_authenticated %}
   <div class="loading-screen" id="loadingScreen">
-    <div class="loading-logo">N</div>
+    <div class="loading-logo-image brand-logo-image" aria-label="Nagaram logo">
+      <img src="{{ url_for('static_files', filename='nagaram-logo.png') }}" alt="Nagaram logo" decoding="async">
+    </div>
     <div class="loading-bar-wrap"><div class="loading-bar-fill"></div></div>
     <div class="loading-label loading-msg">Initializing city intelligence...</div>
   </div>
@@ -107,11 +91,9 @@
 <script src="{{ url_for('static_files', filename='js/app.js') }}"></script>
 
 <script>
-  // Global brand migration: keep every rendered UI surface branded as Nagaram.
   document.addEventListener('DOMContentLoaded', function () {
     const oldBrand = 'UrbanPulse AI';
     const newBrand = 'Nagaram';
-
     function replaceBrand(node) {
       if (node.nodeType === Node.TEXT_NODE) {
         if (node.nodeValue.includes(oldBrand)) node.nodeValue = node.nodeValue.replaceAll(oldBrand, newBrand);
@@ -119,25 +101,16 @@
       }
       if (node.nodeType === Node.ELEMENT_NODE && (node.tagName === 'SCRIPT' || node.tagName === 'STYLE')) return;
       node.childNodes.forEach(replaceBrand);
-
       if (node.nodeType === Node.ELEMENT_NODE) {
         for (const attr of Array.from(node.attributes)) {
-          if (attr.value.includes(oldBrand)) {
-            node.setAttribute(attr.name, attr.value.replaceAll(oldBrand, newBrand));
-          }
+          if (attr.value.includes(oldBrand)) node.setAttribute(attr.name, attr.value.replaceAll(oldBrand, newBrand));
         }
       }
     }
-
     replaceBrand(document.body);
     document.title = document.title.replaceAll(oldBrand, newBrand);
-
     const description = document.querySelector('meta[name="description"]');
     if (description) description.content = description.content.replaceAll(oldBrand, newBrand);
-
-    document.querySelectorAll('.brand-logo').forEach(function (logo) {
-      if (logo.textContent.trim() === 'U') logo.textContent = 'N';
-    });
   });
 </script>
 
