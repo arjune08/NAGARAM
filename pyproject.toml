@@ -1,7 +1,7 @@
 [project]
 name = "urban-pulse-ai"
 version = "1.0.0"
-description = "UrbanPulse AI - Urban Infrastructure Intelligence Platform"
+description = "Nagaram - Urban Infrastructure Intelligence Platform"
 requires-python = ">=3.11,<3.13"
 dependencies = [
     "Flask==3.0.3",
@@ -10,7 +10,8 @@ dependencies = [
     "Flask-WTF==1.2.1",
     "Werkzeug==3.0.3",
     "python-dotenv==1.0.1",
-    "Pillow==10.4.0"
+    "Pillow==10.4.0",
+    "psycopg[binary]==3.2.10"
 ]
 
 [tool.vercel]
