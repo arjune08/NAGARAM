@@ -10,7 +10,6 @@ from models import db, User
 
 
 class RootTemplateLoader(FileSystemLoader):
-    """Load flat repository templates while supporting legacy nested paths."""
     def get_source(self, environment, template):
         try:
             return super().get_source(environment, template)
@@ -39,9 +38,15 @@ def create_app():
 
     @app.route("/static/<path:filename>")
     def static_files(filename):
-        if "/" in filename:
-            filename = filename.rsplit("/", 1)[-1]
+        filename = filename.rsplit("/", 1)[-1]
         return send_from_directory(app.root_path, filename)
+
+    @app.route("/favicon.ico")
+    @app.route("/favicon.png")
+    def favicon():
+        # Avoid sending favicon requests through the database-backed error
+        # page, which can turn an ordinary 404 into a 500 when DB is down.
+        return (b"", 204)
 
     db.init_app(app)
 
@@ -75,10 +80,13 @@ def create_app():
     app.register_blueprint(safety_bp, url_prefix="/safety")
     app.register_blueprint(api_bp, url_prefix="/api")
 
-    # Do not run DDL during every Vercel function cold start. The production
-    # PostgreSQL schema should be provisioned separately; create_all remains
-    # available for local development.
-    if not os.environ.get("VERCEL"):
+    # Neon is persistent, so initialize an empty production database once per
+    # serverless instance. This is safe for CREATE TABLE IF NOT EXISTS and is
+    # required because the newly-created Neon database starts empty.
+    if os.environ.get("VERCEL") and Config.DATABASE_URL:
+        with app.app_context():
+            db.create_all()
+    elif not os.environ.get("VERCEL"):
         with app.app_context():
             db.create_all()
 
@@ -106,6 +114,7 @@ def create_app():
     @app.errorhandler(500)
     def internal_error(error):
         db.session.rollback()
+        # Keep the error handler independent of database queries.
         return render_template("500.html"), 500
 
     return app
