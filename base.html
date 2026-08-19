@@ -14,7 +14,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&family=Noto+Sans+Tamil:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
   <link rel="stylesheet" href="{{ url_for('static_files', filename='css/variables.css') }}">
   <link rel="stylesheet" href="{{ url_for('static_files', filename='css/base.css') }}">
   <link rel="stylesheet" href="{{ url_for('static_files', filename='css/components.css') }}">
@@ -22,49 +21,30 @@
   <link rel="stylesheet" href="{{ url_for('static_files', filename='css/pages.css') }}">
 
   <style>
-    :root {
-      --font-main: 'Noto Sans Tamil', 'Inter', 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-      --font-display: 'Noto Sans Tamil', 'Inter', sans-serif;
-    }
-    body, button, input, textarea, select, option { font-family: var(--font-main); }
-    h1, h2, h3, h4, h5, h6 { font-family: var(--font-display); }
-    .brand-name, .brand-sub, .nav-text, .breadcrumb-current, .system-pulse, .page-body, .btn, .role-title, .feature-title { font-family: var(--font-main); }
-
-    .brand-logo-image { display:flex !important; align-items:center; justify-content:center; overflow:hidden; background:transparent !important; padding:0 !important; }
-    .brand-logo-image img { width:100%; height:100%; display:block; object-fit:contain; object-position:center; image-rendering:auto; }
+    :root { --font-main:'Noto Sans Tamil','Inter','DM Sans',-apple-system,BlinkMacSystemFont,sans-serif; --font-display:'Noto Sans Tamil','Inter',sans-serif; }
+    body,button,input,textarea,select,option { font-family:var(--font-main); }
+    h1,h2,h3,h4,h5,h6 { font-family:var(--font-display); }
+    .brand-name,.brand-sub,.nav-text,.breadcrumb-current,.system-pulse,.page-body,.btn,.role-title,.feature-title { font-family:var(--font-main); }
+    .nagaram-logo-slot { display:flex !important; align-items:center; justify-content:center; overflow:hidden; background:transparent !important; padding:0 !important; }
+    .nagaram-logo-slot img { display:block; width:100%; height:100%; object-fit:contain; object-position:center; image-rendering:auto; }
     .loading-logo-image { width:72px; height:72px; margin:0 auto 1rem; }
-    .loading-logo-image img { width:100%; height:100%; object-fit:contain; display:block; }
   </style>
-
   {% block extra_css %}{% endblock %}
 </head>
 <body>
-
 {% if current_user.is_authenticated %}
   <div class="loading-screen" id="loadingScreen">
-    <div class="loading-logo-image brand-logo-image" aria-label="Nagaram logo">
-      <img src="{{ url_for('static_files', filename='nagaram-logo.png') }}" alt="Nagaram logo" decoding="async">
-    </div>
+    <div class="loading-logo-image nagaram-logo-slot"><img src="{{ url_for('static_files', filename='nagaram-logo.png') }}" alt="Nagaram logo" decoding="async"></div>
     <div class="loading-bar-wrap"><div class="loading-bar-fill"></div></div>
     <div class="loading-label loading-msg">Initializing city intelligence...</div>
   </div>
-
   <div class="app-shell">
     {% include '_sidebar.html' %}
     <div class="main-content">
       {% include '_header.html' %}
       <main class="page-body">
         {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            <div style="margin-bottom:1.25rem;display:flex;flex-direction:column;gap:8px;">
-              {% for cat, msg in messages %}
-                <div class="toast toast-{{ cat }}">
-                  <i data-lucide="{% if cat == 'success' %}check-circle-2{% elif cat == 'danger' %}alert-triangle{% elif cat == 'warning' %}alert-circle{% else %}info{% endif %}" style="width:16px;height:16px;flex-shrink:0;"></i>
-                  <span>{{ msg }}</span>
-                </div>
-              {% endfor %}
-            </div>
-          {% endif %}
+          {% if messages %}<div style="margin-bottom:1.25rem;display:flex;flex-direction:column;gap:8px;">{% for cat,msg in messages %}<div class="toast toast-{{ cat }}"><i data-lucide="{% if cat == 'success' %}check-circle-2{% elif cat == 'danger' %}alert-triangle{% elif cat == 'warning' %}alert-circle{% else %}info{% endif %}" style="width:16px;height:16px;flex-shrink:0;"></i><span>{{ msg }}</span></div>{% endfor %}</div>{% endif %}
         {% endwith %}
         {% block content %}{% endblock %}
       </main>
@@ -72,48 +52,45 @@
   </div>
 {% else %}
   {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      <div style="position:fixed;top:80px;right:24px;z-index:400;display:flex;flex-direction:column;gap:8px;">
-        {% for cat, msg in messages %}
-          <div class="toast toast-{{ cat }}"><i data-lucide="info" style="width:15px;height:15px;"></i><span>{{ msg }}</span></div>
-        {% endfor %}
-      </div>
-    {% endif %}
+    {% if messages %}<div style="position:fixed;top:80px;right:24px;z-index:400;display:flex;flex-direction:column;gap:8px;">{% for cat,msg in messages %}<div class="toast toast-{{ cat }}"><i data-lucide="info" style="width:15px;height:15px;"></i><span>{{ msg }}</span></div>{% endfor %}</div>{% endif %}
   {% endwith %}
   {% block public_content %}{% endblock %}
 {% endif %}
-
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="{{ url_for('static_files', filename='js/particles.js') }}"></script>
 <script src="{{ url_for('static_files', filename='js/charts.js') }}"></script>
 <script src="{{ url_for('static_files', filename='js/maps.js') }}"></script>
 <script src="{{ url_for('static_files', filename='js/app.js') }}"></script>
-
 <script>
   document.addEventListener('DOMContentLoaded', function () {
-    const oldBrand = 'UrbanPulse AI';
-    const newBrand = 'Nagaram';
-    function replaceBrand(node) {
-      if (node.nodeType === Node.TEXT_NODE) {
-        if (node.nodeValue.includes(oldBrand)) node.nodeValue = node.nodeValue.replaceAll(oldBrand, newBrand);
-        return;
-      }
-      if (node.nodeType === Node.ELEMENT_NODE && (node.tagName === 'SCRIPT' || node.tagName === 'STYLE')) return;
+    const oldBrand='UrbanPulse AI', newBrand='Nagaram';
+    function replaceBrand(node){
+      if(node.nodeType===Node.TEXT_NODE){if(node.nodeValue.includes(oldBrand))node.nodeValue=node.nodeValue.replaceAll(oldBrand,newBrand);return;}
+      if(node.nodeType===Node.ELEMENT_NODE&&(node.tagName==='SCRIPT'||node.tagName==='STYLE'))return;
       node.childNodes.forEach(replaceBrand);
-      if (node.nodeType === Node.ELEMENT_NODE) {
-        for (const attr of Array.from(node.attributes)) {
-          if (attr.value.includes(oldBrand)) node.setAttribute(attr.name, attr.value.replaceAll(oldBrand, newBrand));
-        }
-      }
+      if(node.nodeType===Node.ELEMENT_NODE)for(const attr of Array.from(node.attributes))if(attr.value.includes(oldBrand))node.setAttribute(attr.name,attr.value.replaceAll(oldBrand,newBrand));
     }
     replaceBrand(document.body);
-    document.title = document.title.replaceAll(oldBrand, newBrand);
-    const description = document.querySelector('meta[name="description"]');
-    if (description) description.content = description.content.replaceAll(oldBrand, newBrand);
+    document.title=document.title.replaceAll(oldBrand,newBrand);
+    const description=document.querySelector('meta[name="description"]'); if(description)description.content=description.content.replaceAll(oldBrand,newBrand);
+
+    // Convert legacy U/N brand marks to the uploaded Nagaram logo while keeping
+    // the original element dimensions so the logo never stretches or blurs.
+    document.querySelectorAll('.brand-logo:not(.brand-logo-image)').forEach(function(el){
+      const mark=(el.textContent||'').trim();
+      if(mark==='U'||mark==='N'){
+        el.textContent='';
+        el.classList.add('nagaram-logo-slot');
+        const img=document.createElement('img');
+        img.src='{{ url_for('static_files', filename='nagaram-logo.png') }}';
+        img.alt='Nagaram logo';
+        img.decoding='async';
+        el.appendChild(img);
+      }
+    });
   });
 </script>
-
 {% block extra_js %}{% endblock %}
 </body>
 </html>
