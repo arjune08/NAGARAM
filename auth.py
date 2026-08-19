@@ -1,9 +1,11 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, session
 from flask_login import login_user, logout_user, login_required, current_user
 from models import db, User, NGOOrganization, VolunteerProfile
 from functools import wraps
 
+
 auth_bp = Blueprint('auth', __name__)
+
 
 def role_required(*roles):
     def decorator(f):
@@ -11,7 +13,7 @@ def role_required(*roles):
         def decorated_function(*args, **kwargs):
             if not current_user.is_authenticated:
                 flash("Please log in to access this page.", "warning")
-                return redirect(url_for('auth.login'))
+                return redirect(url_for('auth.login', next=request.path))
             if current_user.role not in roles:
                 flash("Unauthorized access for your account role.", "danger")
                 return render_template('errors/403.html'), 403
@@ -19,26 +21,36 @@ def role_required(*roles):
         return decorated_function
     return decorator
 
+
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('main.landing'))
+        if current_user.role == 'admin':
+            return redirect(url_for('admin.command_center'))
+        elif current_user.role == 'ngo':
+            return redirect(url_for('ngo.dashboard'))
+        elif current_user.role == 'volunteer':
+            return redirect(url_for('volunteer.dashboard'))
+        return redirect(url_for('citizen.dashboard'))
 
     if request.method == 'POST':
         email = request.form.get('email', '').strip()
         password = request.form.get('password', '')
-        remember = True if request.form.get('remember') else False
 
         user = User.query.filter_by(email=email).first()
         if not user or not user.check_password(password):
             flash('Invalid email address or password.', 'danger')
             return render_template('auth/login.html')
 
-        login_user(user, remember=remember)
+        # Always persist the login on Nagaram. The remember cookie is useful
+        # when the next request is handled by a different Vercel instance.
+        login_user(user, remember=True, fresh=True)
+        session.permanent = True
+        session.modified = True
         flash(f'Welcome back, {user.full_name}!', 'success')
 
         next_page = request.args.get('next')
-        if next_page:
+        if next_page and next_page.startswith('/') and not next_page.startswith('//'):
             return redirect(next_page)
 
         if user.role == 'admin':
@@ -47,10 +59,10 @@ def login():
             return redirect(url_for('ngo.dashboard'))
         elif user.role == 'volunteer':
             return redirect(url_for('volunteer.dashboard'))
-        else:
-            return redirect(url_for('citizen.dashboard'))
+        return redirect(url_for('citizen.dashboard'))
 
     return render_template('auth/login.html')
+
 
 @auth_bp.route('/register/citizen', methods=['GET', 'POST'])
 def register_citizen():
@@ -69,11 +81,14 @@ def register_citizen():
         db.session.add(user)
         db.session.commit()
 
-        login_user(user)
-        flash('Registration successful! Welcome to UrbanPulse AI.', 'success')
+        login_user(user, remember=True, fresh=True)
+        session.permanent = True
+        session.modified = True
+        flash('Registration successful! Welcome to Nagaram.', 'success')
         return redirect(url_for('citizen.dashboard'))
 
     return render_template('auth/register_citizen.html')
+
 
 @auth_bp.route('/register/ngo', methods=['GET', 'POST'])
 def register_ngo():
@@ -104,11 +119,14 @@ def register_ngo():
         db.session.add(ngo)
         db.session.commit()
 
-        login_user(user)
+        login_user(user, remember=True, fresh=True)
+        session.permanent = True
+        session.modified = True
         flash('NGO Registration submitted for verification!', 'success')
         return redirect(url_for('ngo.dashboard'))
 
     return render_template('auth/register_ngo.html')
+
 
 @auth_bp.route('/register/volunteer', methods=['GET', 'POST'])
 def register_volunteer():
@@ -136,11 +154,14 @@ def register_volunteer():
         db.session.add(vol)
         db.session.commit()
 
-        login_user(user)
+        login_user(user, remember=True, fresh=True)
+        session.permanent = True
+        session.modified = True
         flash('Volunteer Registration completed!', 'success')
         return redirect(url_for('volunteer.dashboard'))
 
     return render_template('auth/register_volunteer.html')
+
 
 @auth_bp.route('/logout')
 @login_required
