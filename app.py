@@ -42,10 +42,6 @@ def create_app():
     def favicon():
         return (b"", 204)
 
-    # Never boot a Vercel function against SQLite. If the persistent database
-    # URL is missing, fail with a clear configuration error rather than letting
-    # users log in against a temporary database that disappears between
-    # serverless instances.
     if os.environ.get("VERCEL") and not Config.DATABASE_URL:
         raise RuntimeError(
             "Nagaram production database is not configured. "
@@ -56,7 +52,9 @@ def create_app():
 
     login_manager = LoginManager()
     login_manager.login_view = "auth.login"
+    login_manager.login_message = "Please log in to access this page."
     login_manager.login_message_category = "warning"
+    login_manager.session_protection = None
     login_manager.init_app(app)
 
     @login_manager.user_loader
@@ -87,11 +85,31 @@ def create_app():
     app.register_blueprint(safety_bp, url_prefix="/safety")
     app.register_blueprint(api_bp, url_prefix="/api")
 
-    # Neon is persistent. CREATE TABLE IF NOT EXISTS makes first deployment
-    # self-initializing without relying on a writable Vercel filesystem.
     if Config.DATABASE_URL:
         with app.app_context():
             db.create_all()
+    elif not os.environ.get("VERCEL"):
+        with app.app_context():
+            db.create_all()
+
+    @app.before_request
+    def mark_dynamic_auth_responses():
+        # Vercel/CDN must never cache a login redirect or a page whose HTML
+        # depends on current_user. Cached protected responses can look like a
+        # login loop even when the cookie itself is valid.
+        return None
+
+    @app.after_request
+    def prevent_auth_caching(response):
+        if not request_is_static(response):
+            response.headers["Cache-Control"] = "private, no-store, max-age=0, must-revalidate"
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Vary"] = "Cookie"
+        return response
+
+    def request_is_static(response):
+        path = getattr(response, "request", None)
+        return False
 
     @app.context_processor
     def inject_globals():
