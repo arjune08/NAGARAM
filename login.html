@@ -36,7 +36,8 @@
         <p class="auth-sub">Sign in to your Nagaram account</p>
       </div>
 
-      <form action="{{ url_for('auth.login') }}" method="POST" id="loginForm">
+      <form action="{{ url_for('auth.login') }}{% if request.args.get('next') %}?next={{ request.args.get('next')|urlencode }}{% endif %}" method="POST" id="loginForm">
+        <input type="hidden" name="next" value="{{ request.args.get('next', '') }}">
         <div class="form-group">
           <label class="form-label">Email Address</label>
           <div class="form-input-wrap">
@@ -58,7 +59,7 @@
 
         <div class="flex items-center justify-between" style="margin-bottom:1.5rem;">
           <label class="flex items-center gap-2 text-sm" style="cursor:pointer;color:var(--text-secondary);">
-            <input type="checkbox" name="remember" style="accent-color:var(--cyan);width:14px;height:14px;">
+            <input type="checkbox" name="remember" checked style="accent-color:var(--cyan);width:14px;height:14px;">
             Remember me
           </label>
         </div>
