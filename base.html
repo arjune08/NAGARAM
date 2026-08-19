@@ -10,7 +10,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&family=Noto+Sans+Tamil:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
@@ -20,6 +20,39 @@
   <link rel="stylesheet" href="{{ url_for('static_files', filename='css/components.css') }}">
   <link rel="stylesheet" href="{{ url_for('static_files', filename='css/layouts.css') }}">
   <link rel="stylesheet" href="{{ url_for('static_files', filename='css/pages.css') }}">
+
+  <!-- Nagaram dashboard typography: Noto Sans Tamil supports Tamil and Latin UI text. -->
+  <style>
+    :root {
+      --font-main: 'Noto Sans Tamil', 'Inter', 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-display: 'Noto Sans Tamil', 'Inter', sans-serif;
+    }
+
+    body,
+    button,
+    input,
+    textarea,
+    select,
+    option {
+      font-family: var(--font-main);
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      font-family: var(--font-display);
+    }
+
+    .brand-name,
+    .brand-sub,
+    .nav-text,
+    .breadcrumb-current,
+    .system-pulse,
+    .page-body,
+    .btn,
+    .role-title,
+    .feature-title {
+      font-family: var(--font-main);
+    }
+  </style>
 
   {% block extra_css %}{% endblock %}
 </head>
@@ -74,7 +107,7 @@
 <script src="{{ url_for('static_files', filename='js/app.js') }}"></script>
 
 <script>
-  // Global brand migration: keep all existing templates and platform copy in sync with Nagaram.
+  // Global brand migration: keep every rendered UI surface branded as Nagaram.
   document.addEventListener('DOMContentLoaded', function () {
     const oldBrand = 'UrbanPulse AI';
     const newBrand = 'Nagaram';
@@ -86,6 +119,14 @@
       }
       if (node.nodeType === Node.ELEMENT_NODE && (node.tagName === 'SCRIPT' || node.tagName === 'STYLE')) return;
       node.childNodes.forEach(replaceBrand);
+
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        for (const attr of Array.from(node.attributes)) {
+          if (attr.value.includes(oldBrand)) {
+            node.setAttribute(attr.name, attr.value.replaceAll(oldBrand, newBrand));
+          }
+        }
+      }
     }
 
     replaceBrand(document.body);
