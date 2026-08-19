@@ -9,7 +9,9 @@
     <div class="aurora" style="width:400px;height:300px;bottom:-50px;right:-80px;background:radial-gradient(ellipse,rgba(124,58,237,0.10),transparent 70%);filter:blur(60px);pointer-events:none;position:absolute;"></div>
 
     <div class="auth-left-content anim-slide-left">
-      <div class="brand-logo" style="width:56px;height:56px;font-size:1.6rem;margin:0 auto 1.5rem;">N</div>
+      <div class="brand-logo brand-logo-image" aria-label="Nagaram logo">
+        <img src="{{ url_for('static_files', filename='nagaram-logo.png') }}" alt="Nagaram Tamil Nadu logo" decoding="async" fetchpriority="high">
+      </div>
       <h2 class="auth-left-title">Nagaram</h2>
       <p class="auth-left-sub">Tamil Nadu's city operating intelligence platform — monitoring infrastructure, predicting failures, and empowering communities across 7 smart cities.</p>
 
@@ -31,7 +33,9 @@
   <div class="auth-right">
     <div class="auth-card anim-scale-in">
       <div class="auth-logo-wrap">
-        <div class="brand-logo" style="width:42px;height:42px;font-size:1.3rem;margin-bottom:0;">N</div>
+        <div class="brand-logo brand-logo-image auth-logo-image" aria-label="Nagaram logo">
+          <img src="{{ url_for('static_files', filename='nagaram-logo.png') }}" alt="Nagaram Tamil Nadu logo" decoding="async" fetchpriority="high">
+        </div>
         <h3 class="auth-title">Welcome back</h3>
         <p class="auth-sub">Sign in to your Nagaram account</p>
       </div>
@@ -85,6 +89,27 @@
     </div>
   </div>
 </div>
+
+<style>
+  .brand-logo-image {
+    display:flex !important;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+    background:transparent !important;
+    padding:0 !important;
+  }
+  .brand-logo-image img {
+    display:block;
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    object-position:center;
+    image-rendering:auto;
+  }
+  .auth-logo-image { width:42px !important; height:42px !important; margin-bottom:0 !important; }
+  .auth-left .brand-logo-image { width:56px !important; height:56px !important; margin:0 auto 1.5rem !important; }
+</style>
 
 <script>
 function togglePw() {
