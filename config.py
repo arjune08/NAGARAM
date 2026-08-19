@@ -6,9 +6,6 @@ class Config:
     # ---------------------------------------------------------
     # Security
     # ---------------------------------------------------------
-    # IMPORTANT: set SECRET_KEY in Vercel Environment Variables to a
-    # long random value. A stable key is required so signed Flask-Login
-    # cookies remain valid across Vercel serverless instances/deployments.
     SECRET_KEY = os.environ.get(
         "SECRET_KEY",
         "urbanpulse-ai-super-secret-key-2026-sdg11"
@@ -17,11 +14,7 @@ class Config:
     # ---------------------------------------------------------
     # Persistent login cookies
     # ---------------------------------------------------------
-    # Nagaram uses Flask-Login's remember cookie so a user stays signed in
-    # after closing/reopening the browser. The long lifetime avoids forcing
-    # users to log in repeatedly while still allowing explicit logout.
-    # Passwords are NEVER stored in cookies.
-    PERSISTENT_LOGIN_DAYS = 3650  # 10 years
+    PERSISTENT_LOGIN_DAYS = 3650
     PERSISTENT_LOGIN_LIFETIME = timedelta(days=PERSISTENT_LOGIN_DAYS)
 
     SESSION_COOKIE_HTTPONLY = True
@@ -39,28 +32,29 @@ class Config:
     REMEMBER_COOKIE_REFRESH_EACH_REQUEST = True
     REMEMBER_COOKIE_PATH = "/"
 
-    # Make the normal Flask session persistent for the same long period.
-    # Flask-Login's remember cookie remains the recovery mechanism if the
-    # browser clears the normal session cookie.
     PERMANENT_SESSION_LIFETIME = PERSISTENT_LOGIN_LIFETIME
 
     # ---------------------------------------------------------
     # Database
     # ---------------------------------------------------------
-    # Production MUST provide DATABASE_URL (preferably managed PostgreSQL).
-    # SQLite remains the local-development fallback only.
+    # Vercel production must provide DATABASE_URL pointing to the
+    # persistent Neon PostgreSQL database. Never commit the real URL.
     DATABASE_URL = os.environ.get("DATABASE_URL")
 
     if DATABASE_URL:
         if DATABASE_URL.startswith("postgres://"):
-            DATABASE_URL = DATABASE_URL.replace(
-                "postgres://",
-                "postgresql://",
-                1
-            )
+            DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
         SQLALCHEMY_DATABASE_URI = DATABASE_URL
+        SQLALCHEMY_ENGINE_OPTIONS = {
+            "pool_pre_ping": True,
+            "pool_recycle": 300,
+            "pool_timeout": 10,
+            "connect_args": {"connect_timeout": 10},
+        }
     else:
+        # Local development fallback only. Production Vercel should not use this.
         SQLALCHEMY_DATABASE_URI = "sqlite:///urbanpulse.db"
+        SQLALCHEMY_ENGINE_OPTIONS = {}
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
