@@ -22,15 +22,11 @@ class RootTemplateLoader(FileSystemLoader):
 
 def create_app():
     app = Flask(__name__, template_folder=".", static_folder=None)
-
-    if os.environ.get("VERCEL"):
-        app.instance_path = "/tmp/urbanpulse_instance"
-        os.makedirs(app.instance_path, exist_ok=True)
-
     app.jinja_loader = RootTemplateLoader(app.root_path)
     app.config.from_object(Config)
 
     if os.environ.get("VERCEL"):
+        app.instance_path = "/tmp/urbanpulse_instance"
         app.config["UPLOAD_FOLDER"] = "/tmp/urbanpulse_uploads"
     else:
         app.config["UPLOAD_FOLDER"] = os.path.join(app.root_path, "static", "uploads")
@@ -44,9 +40,17 @@ def create_app():
     @app.route("/favicon.ico")
     @app.route("/favicon.png")
     def favicon():
-        # Avoid sending favicon requests through the database-backed error
-        # page, which can turn an ordinary 404 into a 500 when DB is down.
         return (b"", 204)
+
+    # Never boot a Vercel function against SQLite. If the persistent database
+    # URL is missing, fail with a clear configuration error rather than letting
+    # users log in against a temporary database that disappears between
+    # serverless instances.
+    if os.environ.get("VERCEL") and not Config.DATABASE_URL:
+        raise RuntimeError(
+            "Nagaram production database is not configured. "
+            "Set DATABASE_URL in Vercel Production to the Neon PostgreSQL URL."
+        )
 
     db.init_app(app)
 
@@ -58,8 +62,11 @@ def create_app():
     @login_manager.user_loader
     def load_user(user_id):
         try:
-            return User.query.get(int(user_id))
+            return db.session.get(User, int(user_id))
         except (TypeError, ValueError):
+            return None
+        except Exception:
+            db.session.rollback()
             return None
 
     from auth import auth_bp
@@ -80,13 +87,9 @@ def create_app():
     app.register_blueprint(safety_bp, url_prefix="/safety")
     app.register_blueprint(api_bp, url_prefix="/api")
 
-    # Neon is persistent, so initialize an empty production database once per
-    # serverless instance. This is safe for CREATE TABLE IF NOT EXISTS and is
-    # required because the newly-created Neon database starts empty.
-    if os.environ.get("VERCEL") and Config.DATABASE_URL:
-        with app.app_context():
-            db.create_all()
-    elif not os.environ.get("VERCEL"):
+    # Neon is persistent. CREATE TABLE IF NOT EXISTS makes first deployment
+    # self-initializing without relying on a writable Vercel filesystem.
+    if Config.DATABASE_URL:
         with app.app_context():
             db.create_all()
 
@@ -100,6 +103,7 @@ def create_app():
                     user_id=current_user.id, is_read=False
                 ).count()
             except Exception:
+                db.session.rollback()
                 unread_notifications = 0
         return {"unread_notifications": unread_notifications}
 
@@ -114,7 +118,6 @@ def create_app():
     @app.errorhandler(500)
     def internal_error(error):
         db.session.rollback()
-        # Keep the error handler independent of database queries.
         return render_template("500.html"), 500
 
     return app
