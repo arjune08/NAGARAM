@@ -1,42 +1,25 @@
 {% extends 'base.html' %}
-{% block title %}Sign In — UrbanPulse AI{% endblock %}
+{% block title %}Sign In — Nagaram{% endblock %}
 
 {% block public_content %}
 <div class="auth-layout">
-
-  <!-- LEFT PANEL: Animated visualization -->
   <div class="auth-left">
     <canvas class="auth-left-canvas" id="authCanvas"></canvas>
-
-    <!-- Ambient blobs -->
     <div class="aurora" style="width:500px;height:400px;top:-50px;left:-100px;background:radial-gradient(ellipse,rgba(0,212,255,0.12),transparent 70%);filter:blur(60px);pointer-events:none;position:absolute;"></div>
     <div class="aurora" style="width:400px;height:300px;bottom:-50px;right:-80px;background:radial-gradient(ellipse,rgba(124,58,237,0.10),transparent 70%);filter:blur(60px);pointer-events:none;position:absolute;"></div>
 
     <div class="auth-left-content anim-slide-left">
-      <div class="brand-logo" style="width:56px;height:56px;font-size:1.6rem;margin:0 auto 1.5rem;">U</div>
-      <h2 class="auth-left-title">UrbanPulse AI</h2>
+      <div class="brand-logo" style="width:56px;height:56px;font-size:1.6rem;margin:0 auto 1.5rem;">N</div>
+      <h2 class="auth-left-title">Nagaram</h2>
       <p class="auth-left-sub">Tamil Nadu's city operating intelligence platform — monitoring infrastructure, predicting failures, and empowering communities across 7 smart cities.</p>
 
       <ul class="auth-feature-list">
-        <li class="auth-feature-item">
-          <i data-lucide="shield-check" style="width:18px;height:18px;"></i>
-          AI-powered predictive risk scoring across TN infrastructure
-        </li>
-        <li class="auth-feature-item">
-          <i data-lucide="layers-3" style="width:18px;height:18px;"></i>
-          Urban Digital Twin simulations for policy decisions
-        </li>
-        <li class="auth-feature-item">
-          <i data-lucide="users-round" style="width:18px;height:18px;"></i>
-          Citizen, NGO, and volunteer collaboration platform
-        </li>
-        <li class="auth-feature-item">
-          <i data-lucide="leaf" style="width:18px;height:18px;"></i>
-          UN SDG 11 compliance tracking across 18 indicators
-        </li>
+        <li class="auth-feature-item"><i data-lucide="shield-check" style="width:18px;height:18px;"></i>AI-powered predictive risk scoring across TN infrastructure</li>
+        <li class="auth-feature-item"><i data-lucide="layers-3" style="width:18px;height:18px;"></i>Urban Digital Twin simulations for policy decisions</li>
+        <li class="auth-feature-item"><i data-lucide="users-round" style="width:18px;height:18px;"></i>Citizen, NGO, and volunteer collaboration platform</li>
+        <li class="auth-feature-item"><i data-lucide="leaf" style="width:18px;height:18px;"></i>UN SDG 11 compliance tracking across 18 indicators</li>
       </ul>
 
-      <!-- TN city tags -->
       <div class="flex gap-2 wrap" style="margin-top:2rem;justify-content:center;">
         {% for c in ['Chennai','Coimbatore','Madurai','Salem','Trichy'] %}
           <span style="padding:0.25rem 0.7rem;background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.15);border-radius:999px;font-size:0.72rem;font-weight:600;color:var(--text-muted);">{{ c }}</span>
@@ -45,18 +28,15 @@
     </div>
   </div>
 
-  <!-- RIGHT PANEL: Auth form -->
   <div class="auth-right">
     <div class="auth-card anim-scale-in">
-
       <div class="auth-logo-wrap">
-        <div class="brand-logo" style="width:42px;height:42px;font-size:1.3rem;margin-bottom:0;">U</div>
+        <div class="brand-logo" style="width:42px;height:42px;font-size:1.3rem;margin-bottom:0;">N</div>
         <h3 class="auth-title">Welcome back</h3>
-        <p class="auth-sub">Sign in to your UrbanPulse AI account</p>
+        <p class="auth-sub">Sign in to your Nagaram account</p>
       </div>
 
       <form action="{{ url_for('auth.login') }}" method="POST" id="loginForm">
-
         <div class="form-group">
           <label class="form-label">Email Address</label>
           <div class="form-input-wrap">
@@ -85,28 +65,20 @@
 
         <button type="submit" class="btn btn-primary btn-full btn-lg" id="loginBtn" style="font-size:0.95rem;">
           <i data-lucide="log-in" id="loginIcon"></i>
-          <span id="loginLabel">Sign In to UrbanPulse</span>
+          <span id="loginLabel">Sign In to Nagaram</span>
         </button>
       </form>
 
       <div class="auth-divider">or register as</div>
-
       <div class="flex gap-2 justify-center">
-        <a href="{{ url_for('auth.register_citizen') }}" class="btn btn-secondary btn-sm">
-          <i data-lucide="user"></i>Citizen
-        </a>
-        <a href="{{ url_for('auth.register_ngo') }}" class="btn btn-secondary btn-sm">
-          <i data-lucide="building-2"></i>NGO
-        </a>
-        <a href="{{ url_for('auth.register_volunteer') }}" class="btn btn-secondary btn-sm">
-          <i data-lucide="hand-helping"></i>Volunteer
-        </a>
+        <a href="{{ url_for('auth.register_citizen') }}" class="btn btn-secondary btn-sm"><i data-lucide="user"></i>Citizen</a>
+        <a href="{{ url_for('auth.register_ngo') }}" class="btn btn-secondary btn-sm"><i data-lucide="building-2"></i>NGO</a>
+        <a href="{{ url_for('auth.register_volunteer') }}" class="btn btn-secondary btn-sm"><i data-lucide="hand-helping"></i>Volunteer</a>
       </div>
 
       <div style="margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid var(--border);text-align:center;">
         <a href="{{ url_for('main.landing') }}" class="flex items-center justify-center gap-2 text-sm text-muted" style="color:var(--text-muted);">
-          <i data-lucide="arrow-left" style="width:14px;height:14px;"></i>
-          Back to homepage
+          <i data-lucide="arrow-left" style="width:14px;height:14px;"></i>Back to homepage
         </a>
       </div>
     </div>
@@ -123,10 +95,10 @@ function togglePw() {
   if (window.lucide) lucide.createIcons();
 }
 
-document.getElementById('loginForm')?.addEventListener('submit', (e) => {
-  const btn   = document.getElementById('loginBtn');
+document.getElementById('loginForm')?.addEventListener('submit', () => {
+  const btn = document.getElementById('loginBtn');
   const label = document.getElementById('loginLabel');
-  const icon  = document.getElementById('loginIcon');
+  const icon = document.getElementById('loginIcon');
   btn.disabled = true;
   label.textContent = 'Authenticating...';
   icon.setAttribute('data-lucide', 'loader-circle');
@@ -135,14 +107,8 @@ document.getElementById('loginForm')?.addEventListener('submit', (e) => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Left panel particles
   if (window.UrbanParticles) {
-    UrbanParticles.init('authCanvas', {
-      particleCount: 35,
-      connectionDist: 130,
-      pulseNodes: 5,
-      speed: 0.25,
-    });
+    UrbanParticles.init('authCanvas', { particleCount: 35, connectionDist: 130, pulseNodes: 5, speed: 0.25 });
   }
   if (window.lucide) lucide.createIcons();
 });
