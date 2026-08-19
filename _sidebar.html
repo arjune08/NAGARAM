@@ -1,135 +1,68 @@
 <aside class="sidebar">
   <div class="sidebar-ambient"></div>
 
-  <!-- Header -->
   <div class="sidebar-header">
-    <div class="brand-logo">N</div>
+    <div class="brand-logo brand-logo-image" aria-label="Nagaram logo">
+      <img src="{{ url_for('static_files', filename='nagaram-logo.png') }}" alt="Nagaram Tamil Nadu logo" decoding="async">
+    </div>
     <div class="brand-text">
       <div class="brand-name">Nagaram</div>
       <div class="brand-sub">Tamil Nadu Intelligence</div>
     </div>
   </div>
 
-  <!-- Navigation -->
   <nav class="sidebar-nav">
 
     {% if current_user.role == 'admin' %}
-
       <div class="nav-group-label">Operations</div>
-      <a href="{{ url_for('admin.command_center') }}" class="nav-item {% if request.endpoint == 'admin.command_center' %}active{% endif %}">
-        <i data-lucide="layout-dashboard"></i><span class="nav-text">Command Center</span>
-      </a>
-      <a href="{{ url_for('admin.issues') }}" class="nav-item {% if request.endpoint == 'admin.issues' %}active{% endif %}">
-        <i data-lucide="file-warning"></i><span class="nav-text">Civic Issues</span>
-        {% set open_count = 3 %}
-        {% if open_count > 0 %}<span class="nav-badge">{{ open_count }}</span>{% endif %}
-      </a>
-
+      <a href="{{ url_for('admin.command_center') }}" class="nav-item {% if request.endpoint == 'admin.command_center' %}active{% endif %}"><i data-lucide="layout-dashboard"></i><span class="nav-text">Command Center</span></a>
+      <a href="{{ url_for('admin.issues') }}" class="nav-item {% if request.endpoint == 'admin.issues' %}active{% endif %}"><i data-lucide="file-warning"></i><span class="nav-text">Civic Issues</span>{% set open_count = 3 %}{% if open_count > 0 %}<span class="nav-badge">{{ open_count }}</span>{% endif %}</a>
       <div class="nav-group-label">Intelligence</div>
-      <a href="{{ url_for('admin.digital_twin') }}" class="nav-item {% if request.endpoint == 'admin.digital_twin' %}active{% endif %}">
-        <i data-lucide="layers-3"></i><span class="nav-text">Urban Digital Twin</span>
-      </a>
-      <a href="{{ url_for('admin.risk_engine') }}" class="nav-item {% if request.endpoint == 'admin.risk_engine' %}active{% endif %}">
-        <i data-lucide="shield-alert"></i><span class="nav-text">Risk Engine</span>
-      </a>
-      <a href="{{ url_for('admin.predictive_maintenance') }}" class="nav-item {% if request.endpoint == 'admin.predictive_maintenance' %}active{% endif %}">
-        <i data-lucide="wrench"></i><span class="nav-text">Predictive Maintenance</span>
-      </a>
-      <a href="{{ url_for('admin.resource_optimizer') }}" class="nav-item {% if request.endpoint == 'admin.resource_optimizer' %}active{% endif %}">
-        <i data-lucide="network"></i><span class="nav-text">Resource Optimizer</span>
-      </a>
-      <a href="{{ url_for('admin.decision_support') }}" class="nav-item {% if request.endpoint == 'admin.decision_support' %}active{% endif %}">
-        <i data-lucide="message-circle-code"></i><span class="nav-text">Decision Support AI</span>
-      </a>
-
+      <a href="{{ url_for('admin.digital_twin') }}" class="nav-item {% if request.endpoint == 'admin.digital_twin' %}active{% endif %}"><i data-lucide="layers-3"></i><span class="nav-text">Urban Digital Twin</span></a>
+      <a href="{{ url_for('admin.risk_engine') }}" class="nav-item {% if request.endpoint == 'admin.risk_engine' %}active{% endif %}"><i data-lucide="shield-alert"></i><span class="nav-text">Risk Engine</span></a>
+      <a href="{{ url_for('admin.predictive_maintenance') }}" class="nav-item {% if request.endpoint == 'admin.predictive_maintenance' %}active{% endif %}"><i data-lucide="wrench"></i><span class="nav-text">Predictive Maintenance</span></a>
+      <a href="{{ url_for('admin.resource_optimizer') }}" class="nav-item {% if request.endpoint == 'admin.resource_optimizer' %}active{% endif %}"><i data-lucide="network"></i><span class="nav-text">Resource Optimizer</span></a>
+      <a href="{{ url_for('admin.decision_support') }}" class="nav-item {% if request.endpoint == 'admin.decision_support' %}active{% endif %}"><i data-lucide="message-circle-code"></i><span class="nav-text">Decision Support AI</span></a>
       <div class="nav-group-label">Analytics</div>
-      <a href="{{ url_for('admin.sustainability') }}" class="nav-item {% if request.endpoint == 'admin.sustainability' %}active{% endif %}">
-        <i data-lucide="leaf"></i><span class="nav-text">Sustainability Index</span>
-      </a>
-      <a href="{{ url_for('admin.data_hub') }}" class="nav-item {% if request.endpoint == 'admin.data_hub' %}active{% endif %}">
-        <i data-lucide="database-zap"></i><span class="nav-text">Data Hub</span>
-      </a>
-      <a href="{{ url_for('admin.audit_log') }}" class="nav-item {% if request.endpoint == 'admin.audit_log' %}active{% endif %}">
-        <i data-lucide="scroll-text"></i><span class="nav-text">Audit Trail</span>
-      </a>
-
+      <a href="{{ url_for('admin.sustainability') }}" class="nav-item {% if request.endpoint == 'admin.sustainability' %}active{% endif %}"><i data-lucide="leaf"></i><span class="nav-text">Sustainability Index</span></a>
+      <a href="{{ url_for('admin.data_hub') }}" class="nav-item {% if request.endpoint == 'admin.data_hub' %}active{% endif %}"><i data-lucide="database-zap"></i><span class="nav-text">Data Hub</span></a>
+      <a href="{{ url_for('admin.audit_log') }}" class="nav-item {% if request.endpoint == 'admin.audit_log' %}active{% endif %}"><i data-lucide="scroll-text"></i><span class="nav-text">Audit Trail</span></a>
     {% elif current_user.role == 'citizen' %}
-
       <div class="nav-group-label">Citizen Portal</div>
-      <a href="{{ url_for('citizen.dashboard') }}" class="nav-item {% if request.endpoint == 'citizen.dashboard' %}active{% endif %}">
-        <i data-lucide="home"></i><span class="nav-text">My Dashboard</span>
-      </a>
-      <a href="{{ url_for('citizen.report_issue') }}" class="nav-item {% if request.endpoint == 'citizen.report_issue' %}active{% endif %}">
-        <i data-lucide="plus-circle"></i><span class="nav-text">Report Issue</span>
-      </a>
-      <a href="{{ url_for('citizen.my_complaints') }}" class="nav-item {% if request.endpoint == 'citizen.my_complaints' %}active{% endif %}">
-        <i data-lucide="file-text"></i><span class="nav-text">My Reports</span>
-      </a>
+      <a href="{{ url_for('citizen.dashboard') }}" class="nav-item {% if request.endpoint == 'citizen.dashboard' %}active{% endif %}"><i data-lucide="home"></i><span class="nav-text">My Dashboard</span></a>
+      <a href="{{ url_for('citizen.report_issue') }}" class="nav-item {% if request.endpoint == 'citizen.report_issue' %}active{% endif %}"><i data-lucide="plus-circle"></i><span class="nav-text">Report Issue</span></a>
+      <a href="{{ url_for('citizen.my_complaints') }}" class="nav-item {% if request.endpoint == 'citizen.my_complaints' %}active{% endif %}"><i data-lucide="file-text"></i><span class="nav-text">My Reports</span></a>
       <div class="nav-group-label">Explore</div>
-      <a href="{{ url_for('citizen.city_map') }}" class="nav-item {% if request.endpoint == 'citizen.city_map' %}active{% endif %}">
-        <i data-lucide="map-pin"></i><span class="nav-text">City Map</span>
-      </a>
-      <a href="{{ url_for('citizen.community') }}" class="nav-item {% if request.endpoint == 'citizen.community' %}active{% endif %}">
-        <i data-lucide="users-round"></i><span class="nav-text">Community</span>
-      </a>
-
+      <a href="{{ url_for('citizen.city_map') }}" class="nav-item {% if request.endpoint == 'citizen.city_map' %}active{% endif %}"><i data-lucide="map-pin"></i><span class="nav-text">City Map</span></a>
+      <a href="{{ url_for('citizen.community') }}" class="nav-item {% if request.endpoint == 'citizen.community' %}active{% endif %}"><i data-lucide="users-round"></i><span class="nav-text">Community</span></a>
     {% elif current_user.role == 'ngo' %}
-
       <div class="nav-group-label">NGO Hub</div>
-      <a href="{{ url_for('ngo.dashboard') }}" class="nav-item {% if request.endpoint == 'ngo.dashboard' %}active{% endif %}">
-        <i data-lucide="building-2"></i><span class="nav-text">Organization Hub</span>
-      </a>
-      <a href="{{ url_for('ngo.initiatives') }}" class="nav-item {% if request.endpoint == 'ngo.initiatives' %}active{% endif %}">
-        <i data-lucide="target"></i><span class="nav-text">Initiatives</span>
-      </a>
-      <a href="{{ url_for('ngo.volunteers') }}" class="nav-item {% if request.endpoint == 'ngo.volunteers' %}active{% endif %}">
-        <i data-lucide="user-plus"></i><span class="nav-text">Volunteers</span>
-      </a>
-
+      <a href="{{ url_for('ngo.dashboard') }}" class="nav-item {% if request.endpoint == 'ngo.dashboard' %}active{% endif %}"><i data-lucide="building-2"></i><span class="nav-text">Organization Hub</span></a>
+      <a href="{{ url_for('ngo.initiatives') }}" class="nav-item {% if request.endpoint == 'ngo.initiatives' %}active{% endif %}"><i data-lucide="target"></i><span class="nav-text">Initiatives</span></a>
+      <a href="{{ url_for('ngo.volunteers') }}" class="nav-item {% if request.endpoint == 'ngo.volunteers' %}active{% endif %}"><i data-lucide="user-plus"></i><span class="nav-text">Volunteers</span></a>
     {% elif current_user.role == 'volunteer' %}
-
       <div class="nav-group-label">Volunteer Portal</div>
-      <a href="{{ url_for('volunteer.dashboard') }}" class="nav-item {% if request.endpoint == 'volunteer.dashboard' %}active{% endif %}">
-        <i data-lucide="user-check"></i><span class="nav-text">My Dashboard</span>
-      </a>
-      <a href="{{ url_for('volunteer.opportunities') }}" class="nav-item {% if request.endpoint == 'volunteer.opportunities' %}active{% endif %}">
-        <i data-lucide="search"></i><span class="nav-text">Opportunities</span>
-      </a>
-      <a href="{{ url_for('volunteer.activities') }}" class="nav-item {% if request.endpoint == 'volunteer.activities' %}active{% endif %}">
-        <i data-lucide="check-square-2"></i><span class="nav-text">My Activities</span>
-      </a>
-
+      <a href="{{ url_for('volunteer.dashboard') }}" class="nav-item {% if request.endpoint == 'volunteer.dashboard' %}active{% endif %}"><i data-lucide="user-check"></i><span class="nav-text">My Dashboard</span></a>
+      <a href="{{ url_for('volunteer.opportunities') }}" class="nav-item {% if request.endpoint == 'volunteer.opportunities' %}active{% endif %}"><i data-lucide="search"></i><span class="nav-text">Opportunities</span></a>
+      <a href="{{ url_for('volunteer.activities') }}" class="nav-item {% if request.endpoint == 'volunteer.activities' %}active{% endif %}"><i data-lucide="check-square-2"></i><span class="nav-text">My Activities</span></a>
     {% endif %}
 
-    <!-- Emergency always visible -->
     <div class="nav-group-label">Emergency</div>
-    <a href="{{ url_for('citizen.emergency') }}" class="nav-item danger-nav {% if request.endpoint == 'citizen.emergency' %}active{% endif %}">
-      <i data-lucide="heart-pulse"></i><span class="nav-text">Emergency Center</span>
-    </a>
-    <a href="{{ url_for('safety.center') }}" class="nav-item danger-nav {% if request.endpoint == 'safety.center' %}active{% endif %}">
-      <i data-lucide="shield-ellipsis"></i><span class="nav-text">Safety & SOS</span>
-    </a>
-
+    <a href="{{ url_for('citizen.emergency') }}" class="nav-item danger-nav {% if request.endpoint == 'citizen.emergency' %}active{% endif %}"><i data-lucide="heart-pulse"></i><span class="nav-text">Emergency Center</span></a>
+    <a href="{{ url_for('safety.center') }}" class="nav-item danger-nav {% if request.endpoint == 'safety.center' %}active{% endif %}"><i data-lucide="shield-ellipsis"></i><span class="nav-text">Safety & SOS</span></a>
   </nav>
 
-  <!-- Footer -->
   <div class="sidebar-footer">
-    <!-- AI Status -->
-    <div class="ai-status" style="margin-bottom:0.75rem;width:100%;justify-content:center;">
-      <div class="ai-dot"></div>
-      <span class="nav-text">AI System Active</span>
-    </div>
-
+    <div class="ai-status" style="margin-bottom:0.75rem;width:100%;justify-content:center;"><div class="ai-dot"></div><span class="nav-text">AI System Active</span></div>
     <div class="user-chip">
       <div class="user-avatar">{{ current_user.full_name[:1].upper() }}</div>
-      <div>
-        <div class="user-name nav-text">{{ current_user.full_name.split()[0] }}</div>
-        <div class="user-role nav-text">{{ current_user.role.capitalize() }}</div>
-      </div>
+      <div><div class="user-name nav-text">{{ current_user.full_name.split()[0] }}</div><div class="user-role nav-text">{{ current_user.role.capitalize() }}</div></div>
     </div>
-    <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary btn-full btn-sm">
-      <i data-lucide="log-out"></i><span class="nav-text">Sign Out</span>
-    </a>
+    <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary btn-full btn-sm"><i data-lucide="log-out"></i><span class="nav-text">Sign Out</span></a>
   </div>
-
 </aside>
+
+<style>
+  .sidebar .brand-logo-image { width:42px; height:42px; flex:0 0 42px; overflow:hidden; display:flex; align-items:center; justify-content:center; background:transparent !important; padding:0 !important; }
+  .sidebar .brand-logo-image img { width:100%; height:100%; display:block; object-fit:contain; object-position:center; }
+</style>
