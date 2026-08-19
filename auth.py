@@ -24,18 +24,18 @@ def role_required(*roles):
 
 
 def _safe_next_url():
-    """Only allow same-site relative redirects after authentication."""
-    target = request.args.get('next', '')
+    """Allow only same-site relative redirects after authentication."""
+    target = request.args.get('next') or request.form.get('next') or ''
     if target.startswith('/') and not target.startswith('//'):
         return target
     return None
 
 
 def _login_and_redirect(user):
-    # Flask-Login stores only the user id in the signed session/remember token;
-    # the user record itself is always reloaded from persistent PostgreSQL.
-    # remember=True is essential because Vercel functions are stateless.
-    login_user(user, remember=True, fresh=True, duration=None)
+    # Vercel functions are stateless. Always use a persistent Flask-Login
+    # remember cookie and a permanent signed session so a later invocation can
+    # restore the same user from PostgreSQL.
+    login_user(user, remember=True, fresh=True)
     session.permanent = True
     session.modified = True
 
@@ -64,13 +64,13 @@ def login():
         user = User.query.filter_by(email=email).first()
         if not user or not user.check_password(password):
             flash('Invalid email address or password.', 'danger')
-            return render_template('auth/login.html')
+            return render_template('login.html')
 
         response = _login_and_redirect(user)
         flash(f'Welcome back, {user.full_name}!', 'success')
         return response
 
-    return render_template('auth/login.html')
+    return render_template('login.html')
 
 
 @auth_bp.route('/register/citizen', methods=['GET', 'POST'])
