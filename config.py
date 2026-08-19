@@ -24,21 +24,33 @@ class Config:
     REMEMBER_COOKIE_PATH = "/"
     PERMANENT_SESSION_LIFETIME = PERSISTENT_LOGIN_LIFETIME
 
-    # Persistent Neon PostgreSQL database.
-    DATABASE_URL = os.environ.get("DATABASE_URL")
+    # Support both the explicit DATABASE_URL and the variable names commonly
+    # created by Vercel/Neon integrations. Never hard-code a credential.
+    DATABASE_URL = (
+        os.environ.get("DATABASE_URL")
+        or os.environ.get("POSTGRES_URL")
+        or os.environ.get("POSTGRES_PRISMA_URL")
+        or os.environ.get("NEON_DATABASE_URL")
+    )
+
     if DATABASE_URL:
         if DATABASE_URL.startswith("postgres://"):
             DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
         SQLALCHEMY_DATABASE_URI = DATABASE_URL
-        # Do not pass connect_timeout here: the installed psycopg DBAPI
-        # rejects it in Vercel's serverless runtime. Keep the engine options
-        # limited to SQLAlchemy/psycopg-compatible settings.
         SQLALCHEMY_ENGINE_OPTIONS = {
             "pool_pre_ping": True,
             "pool_recycle": 300,
         }
+    elif os.environ.get("VERCEL"):
+        # Never silently use SQLite in Vercel. A local SQLite database is not
+        # persistent across serverless instances and would break user data.
+        SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
+        SQLALCHEMY_ENGINE_OPTIONS = {}
+        DATABASE_CONFIGURATION_ERROR = (
+            "No PostgreSQL connection variable is configured. "
+            "Set DATABASE_URL (or POSTGRES_URL) in Vercel Production."
+        )
     else:
-        # Local development fallback only.
         SQLALCHEMY_DATABASE_URI = "sqlite:///urbanpulse.db"
         SQLALCHEMY_ENGINE_OPTIONS = {}
 
