@@ -10,8 +10,7 @@ from models import db, User
 
 
 class RootTemplateLoader(FileSystemLoader):
-    """Load the repository's flat template files even when routes use old paths."""
-
+    """Load flat repository templates while supporting legacy nested paths."""
     def get_source(self, environment, template):
         try:
             return super().get_source(environment, template)
@@ -23,35 +22,21 @@ class RootTemplateLoader(FileSystemLoader):
 
 
 def create_app():
-    # The repository keeps templates and frontend assets at the project root.
-    # Do not use Flask's default ./templates and ./static directories.
     app = Flask(__name__, template_folder=".", static_folder=None)
 
-    # Vercel's deployed filesystem is read-only except /tmp.
     if os.environ.get("VERCEL"):
         app.instance_path = "/tmp/urbanpulse_instance"
         os.makedirs(app.instance_path, exist_ok=True)
 
-    # Support both the current flat template layout and older route references
-    # such as "citizen/dashboard.html" without requiring every route module to
-    # be rewritten at once.
     app.jinja_loader = RootTemplateLoader(app.root_path)
-
     app.config.from_object(Config)
 
-    # Uploads must use /tmp on Vercel.
     if os.environ.get("VERCEL"):
         app.config["UPLOAD_FOLDER"] = "/tmp/urbanpulse_uploads"
     else:
-        app.config["UPLOAD_FOLDER"] = os.path.join(
-            app.root_path, "static", "uploads"
-        )
-
+        app.config["UPLOAD_FOLDER"] = os.path.join(app.root_path, "static", "uploads")
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
-    # The project stores CSS/JS files at the repository root (for example
-    # variables.css and app.js), while templates refer to /static/css/... and
-    # /static/js/.... Map those logical paths to the existing root files.
     @app.route("/static/<path:filename>")
     def static_files(filename):
         if "/" in filename:
@@ -72,7 +57,6 @@ def create_app():
         except (TypeError, ValueError):
             return None
 
-    # All route modules are at the repository root; there is no routes package.
     from auth import auth_bp
     from citizen import citizen_bp
     from admin import admin_bp
@@ -91,25 +75,24 @@ def create_app():
     app.register_blueprint(safety_bp, url_prefix="/safety")
     app.register_blueprint(api_bp, url_prefix="/api")
 
-    # Vercel imports run.py instead of executing it as __main__, so initialize
-    # the schema here after all model modules have been imported.
-    with app.app_context():
-        db.create_all()
+    # Do not run DDL during every Vercel function cold start. The production
+    # PostgreSQL schema should be provisioned separately; create_all remains
+    # available for local development.
+    if not os.environ.get("VERCEL"):
+        with app.app_context():
+            db.create_all()
 
     @app.context_processor
     def inject_globals():
         unread_notifications = 0
-
         if current_user.is_authenticated:
             try:
                 from models import Notification
                 unread_notifications = Notification.query.filter_by(
-                    user_id=current_user.id,
-                    is_read=False
+                    user_id=current_user.id, is_read=False
                 ).count()
             except Exception:
                 unread_notifications = 0
-
         return {"unread_notifications": unread_notifications}
 
     @app.errorhandler(403)
