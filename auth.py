@@ -2,6 +2,7 @@ from functools import wraps
 
 from flask import Blueprint, render_template, redirect, url_for, flash, request, session
 from flask_login import login_user, logout_user, login_required, current_user
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from models import db, User, NGOOrganization, VolunteerProfile
 
 
@@ -24,7 +25,6 @@ def role_required(*roles):
 
 
 def _safe_next_url():
-    """Allow only same-site relative redirects after authentication."""
     target = request.args.get('next') or request.form.get('next') or ''
     if target.startswith('/') and not target.startswith('//'):
         return target
@@ -32,9 +32,6 @@ def _safe_next_url():
 
 
 def _login_and_redirect(user):
-    # Vercel functions are stateless. Always use a persistent Flask-Login
-    # remember cookie and a permanent signed session so a later invocation can
-    # restore the same user from PostgreSQL.
     login_user(user, remember=True, fresh=True)
     session.permanent = True
     session.modified = True
@@ -52,6 +49,25 @@ def _login_and_redirect(user):
     return redirect(url_for('citizen.dashboard'))
 
 
+def _create_user(full_name, email, password, role, phone=None):
+    user = User(
+        full_name=full_name,
+        email=email,
+        role=role,
+        phone=phone or None,
+    )
+    user.set_password(password)
+    db.session.add(user)
+    db.session.flush()  # assigns the database ID before related rows are made
+    return user
+
+
+def _registration_error(template, message):
+    db.session.rollback()
+    flash(message, 'danger')
+    return render_template(template)
+
+
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
@@ -60,8 +76,13 @@ def login():
     if request.method == 'POST':
         email = request.form.get('email', '').strip().lower()
         password = request.form.get('password', '')
+        try:
+            user = User.query.filter_by(email=email).first()
+        except SQLAlchemyError:
+            db.session.rollback()
+            flash('Login service is temporarily unavailable. Please try again.', 'danger')
+            return render_template('login.html')
 
-        user = User.query.filter_by(email=email).first()
         if not user or not user.check_password(password):
             flash('Invalid email address or password.', 'danger')
             return render_template('login.html')
@@ -81,14 +102,23 @@ def register_citizen():
         password = request.form.get('password', '')
         phone = request.form.get('phone', '').strip()
 
-        if User.query.filter_by(email=email).first():
-            flash('Email address is already registered.', 'warning')
+        if not full_name or not email or not password:
+            flash('Name, email, and password are required.', 'warning')
             return render_template('auth/register_citizen.html')
 
-        user = User(full_name=full_name, email=email, role='citizen', phone=phone)
-        user.set_password(password)
-        db.session.add(user)
-        db.session.commit()
+        try:
+            user = _create_user(full_name, email, password, 'citizen', phone)
+            db.session.commit()
+        except IntegrityError:
+            return _registration_error(
+                'auth/register_citizen.html', 'Email address is already registered.'
+            )
+        except SQLAlchemyError:
+            return _registration_error(
+                'auth/register_citizen.html',
+                'We could not save your account. Please try again.',
+            )
+
         response = _login_and_redirect(user)
         flash('Registration successful! Welcome to Nagaram.', 'success')
         return response
@@ -106,24 +136,29 @@ def register_ngo():
         reg_num = request.form.get('reg_number', '').strip()
         category = request.form.get('category', 'Environment')
 
-        if User.query.filter_by(email=email).first():
-            flash('Email address is already registered.', 'warning')
+        if not full_name or not email or not password or not org_name:
+            flash('Please complete all required registration fields.', 'warning')
             return render_template('auth/register_ngo.html')
 
-        user = User(full_name=full_name, email=email, role='ngo')
-        user.set_password(password)
-        db.session.add(user)
-        db.session.commit()
-
-        ngo = NGOOrganization(
-            user_id=user.id,
-            name=org_name,
-            registration_number=reg_num,
-            category=category,
-            verification_status='Pending'
-        )
-        db.session.add(ngo)
-        db.session.commit()
+        try:
+            user = _create_user(full_name, email, password, 'ngo')
+            db.session.add(NGOOrganization(
+                user_id=user.id,
+                name=org_name,
+                registration_number=reg_num,
+                category=category,
+                verification_status='Pending',
+            ))
+            db.session.commit()
+        except IntegrityError:
+            return _registration_error(
+                'auth/register_ngo.html', 'Email address is already registered.'
+            )
+        except SQLAlchemyError:
+            return _registration_error(
+                'auth/register_ngo.html',
+                'We could not save your registration. Please try again.',
+            )
 
         response = _login_and_redirect(user)
         flash('NGO Registration submitted for verification!', 'success')
@@ -141,22 +176,27 @@ def register_volunteer():
         skills = request.form.get('skills', '')
         availability = request.form.get('availability', 'Weekends')
 
-        if User.query.filter_by(email=email).first():
-            flash('Email address is already registered.', 'warning')
+        if not full_name or not email or not password:
+            flash('Name, email, and password are required.', 'warning')
             return render_template('auth/register_volunteer.html')
 
-        user = User(full_name=full_name, email=email, role='volunteer')
-        user.set_password(password)
-        db.session.add(user)
-        db.session.commit()
-
-        vol = VolunteerProfile(
-            user_id=user.id,
-            skills=skills,
-            availability=availability
-        )
-        db.session.add(vol)
-        db.session.commit()
+        try:
+            user = _create_user(full_name, email, password, 'volunteer')
+            db.session.add(VolunteerProfile(
+                user_id=user.id,
+                skills=skills,
+                availability=availability,
+            ))
+            db.session.commit()
+        except IntegrityError:
+            return _registration_error(
+                'auth/register_volunteer.html', 'Email address is already registered.'
+            )
+        except SQLAlchemyError:
+            return _registration_error(
+                'auth/register_volunteer.html',
+                'We could not save your registration. Please try again.',
+            )
 
         response = _login_and_redirect(user)
         flash('Volunteer Registration completed!', 'success')
