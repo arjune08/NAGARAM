@@ -3,8 +3,6 @@ from datetime import timedelta
 
 
 class Config:
-    # Production should provide a stable SECRET_KEY in Vercel. The fallback is
-    # only for local development and is intentionally constant across restarts.
     SECRET_KEY = os.environ.get("SECRET_KEY", "urbanpulse-ai-local-development-key")
 
     PERSISTENT_LOGIN_DAYS = 3650
@@ -27,12 +25,8 @@ class Config:
     REMEMBER_COOKIE_PATH = "/"
     REMEMBER_COOKIE_DURATION = PERSISTENT_LOGIN_LIFETIME
     REMEMBER_COOKIE_REFRESH_EACH_REQUEST = True
-
     SESSION_PROTECTION = None
 
-    # Supabase is PostgreSQL, so the existing SQLAlchemy models continue to
-    # work without an ORM rewrite. Set SUPABASE_DB_URL (or DATABASE_URL) to the
-    # Supabase Postgres connection string, including sslmode=require.
     DATABASE_URL = (
         os.environ.get("SUPABASE_DB_URL")
         or os.environ.get("DATABASE_URL")
@@ -41,8 +35,16 @@ class Config:
     )
 
     if DATABASE_URL:
-        if DATABASE_URL.startswith("postgres://"):
-            DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+        # Supabase provides a PostgreSQL URL. Explicitly select psycopg 3,
+        # which is installed in requirements.txt.
+        if DATABASE_URL.startswith("postgresql://"):
+            DATABASE_URL = DATABASE_URL.replace(
+                "postgresql://", "postgresql+psycopg://", 1
+            )
+        elif DATABASE_URL.startswith("postgres://"):
+            DATABASE_URL = DATABASE_URL.replace(
+                "postgres://", "postgresql+psycopg://", 1
+            )
         SQLALCHEMY_DATABASE_URI = DATABASE_URL
         SQLALCHEMY_ENGINE_OPTIONS = {
             "pool_pre_ping": True,
