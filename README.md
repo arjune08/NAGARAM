@@ -7,7 +7,7 @@ NAGARAM is a Flask-based civic platform for connecting citizens, volunteers, NGO
 - Citizen-facing issue and service workflows
 - Role-based areas for citizens, volunteers, NGOs, and administrators
 - Authentication with Flask-Login
-- Database access through Flask-SQLAlchemy
+- Database access through Flask-SQLAlchemy and Supabase PostgreSQL
 - Form handling with Flask-WTF
 - Image/file support with Pillow
 - Environment-based configuration for local development and deployment
@@ -17,6 +17,7 @@ NAGARAM is a Flask-based civic platform for connecting citizens, volunteers, NGO
 - Python
 - Flask
 - SQLAlchemy
+- Supabase PostgreSQL
 - Flask-Login
 - Flask-WTF
 - Jinja templates
@@ -34,7 +35,7 @@ The project currently keeps several application modules and templates at the rep
 - `safety.py`
 - `api.py`
 
-Configuration and data models are handled by `config.py` and `models.py`.
+Configuration and data models are handled by `config.py` and `models.py`. Supabase database notes are in `supabase/README.md`.
 
 ## Getting started
 
@@ -67,15 +68,15 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 4. Configure environment variables
+### 4. Configure Supabase
 
-Copy the example file and fill in your local values:
+Copy the example file and set `SUPABASE_DB_URL` to the PostgreSQL connection string for your Supabase project:
 
 ```bash
 cp .env.example .env
 ```
 
-Never commit real credentials or production secrets.
+Use the PostgreSQL connection string from Supabase, not the REST/API URL. Keep database credentials server-side and never commit them to Git.
 
 ### 5. Run the application
 
