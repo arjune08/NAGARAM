@@ -20,6 +20,14 @@ class RootTemplateLoader(FileSystemLoader):
             return super().get_source(environment, basename)
 
 
+DEVELOPER_FOOTER = """
+<!-- nagaram-developer-footer -->
+<footer id="nagaram-developer-footer" style="width:100%;box-sizing:border-box;margin-top:32px;padding:16px 20px;text-align:center;background:#08111f;border-top:1px solid rgba(35,173,226,.22);color:#8fa5bb;font-family:inherit;font-size:12px;letter-spacing:.04em;line-height:1.5;">
+  <span>Web Developer: </span><strong style="color:#32b8e6;font-weight:700;">ARJUNE PRIYAN J</strong>
+</footer>
+"""
+
+
 def create_app():
     app = Flask(__name__, template_folder=".", static_folder=None)
     app.jinja_loader = RootTemplateLoader(app.root_path)
@@ -94,22 +102,30 @@ def create_app():
 
     @app.before_request
     def mark_dynamic_auth_responses():
-        # Vercel/CDN must never cache a login redirect or a page whose HTML
-        # depends on current_user. Cached protected responses can look like a
-        # login loop even when the cookie itself is valid.
         return None
 
     @app.after_request
-    def prevent_auth_caching(response):
-        if not request_is_static(response):
-            response.headers["Cache-Control"] = "private, no-store, max-age=0, must-revalidate"
-            response.headers["Pragma"] = "no-cache"
-            response.headers["Vary"] = "Cookie"
-        return response
+    def add_developer_credit_and_prevent_caching(response):
+        # Add one consistent developer credit to every HTML page, including
+        # dashboards, login/register pages and error pages. Static/API content
+        # is never modified.
+        if response.mimetype == "text/html" and response.status_code < 400:
+            html = response.get_data(as_text=True)
+            if "nagaram-developer-footer" not in html:
+                if "</body>" in html:
+                    html = html.replace("</body>", DEVELOPER_FOOTER + "</body>", 1)
+                else:
+                    html += DEVELOPER_FOOTER
+                response.set_data(html)
+                response.headers["Content-Length"] = str(len(response.get_data()))
 
-    def request_is_static(response):
-        path = getattr(response, "request", None)
-        return False
+        # Vercel/CDN must never cache a login redirect or a page whose HTML
+        # depends on current_user. Cached protected responses can look like a
+        # login loop even when the cookie itself is valid.
+        response.headers["Cache-Control"] = "private, no-store, max-age=0, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Vary"] = "Cookie"
+        return response
 
     @app.context_processor
     def inject_globals():
