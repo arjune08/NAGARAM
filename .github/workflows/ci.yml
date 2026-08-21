@@ -29,3 +29,8 @@ jobs:
 
       - name: Compile Python source
         run: python -m compileall -q .
+
+      - name: Verify Supabase configuration files
+        run: |
+          test -f supabase/README.md
+          ! grep -R "service_role\|sb_secret_" .env.example supabase 2>/dev/null
