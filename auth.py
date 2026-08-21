@@ -3,6 +3,7 @@ from functools import wraps
 from flask import Blueprint, render_template, redirect, url_for, flash, request, session
 from flask_login import login_user, logout_user, login_required, current_user
 from models import db, User, NGOOrganization, VolunteerProfile
+from login_models import UserLoginEvent
 
 
 auth_bp = Blueprint('auth', __name__)
@@ -31,13 +32,30 @@ def _safe_next_url():
     return None
 
 
-def _login_and_redirect(user):
-    # Vercel functions are stateless. Always use a persistent Flask-Login
-    # remember cookie and a permanent signed session so a later invocation can
-    # restore the same user from PostgreSQL.
+def _record_login_event(user, email, event_type):
+    """Persist authentication activity in PostgreSQL.
+
+    This intentionally records account/login metadata only. Password values are
+    never logged or stored here; the users.password_hash column contains the
+    one-way verifier used for future authentication.
+    """
+    db.session.add(UserLoginEvent(
+        user_id=user.id if user else None,
+        email=(email or '').strip().lower(),
+        event_type=event_type,
+    ))
+
+
+def _login_and_redirect(user, event_type='login'):
+    # Vercel functions are stateless. The persistent Flask-Login remember
+    # cookie restores the user on a later request, and PostgreSQL remains the
+    # source of truth for the user account and password hash.
     login_user(user, remember=True, fresh=True)
     session.permanent = True
     session.modified = True
+
+    _record_login_event(user, user.email, event_type)
+    db.session.commit()
 
     next_url = _safe_next_url()
     if next_url:
@@ -55,7 +73,7 @@ def _login_and_redirect(user):
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return _login_and_redirect(current_user)
+        return _login_and_redirect(current_user, event_type='session_refresh')
 
     if request.method == 'POST':
         email = request.form.get('email', '').strip().lower()
@@ -63,10 +81,12 @@ def login():
 
         user = User.query.filter_by(email=email).first()
         if not user or not user.check_password(password):
+            _record_login_event(user, email, 'login_failed')
+            db.session.commit()
             flash('Invalid email address or password.', 'danger')
             return render_template('login.html')
 
-        response = _login_and_redirect(user)
+        response = _login_and_redirect(user, event_type='login_success')
         flash(f'Welcome back, {user.full_name}!', 'success')
         return response
 
@@ -89,7 +109,7 @@ def register_citizen():
         user.set_password(password)
         db.session.add(user)
         db.session.commit()
-        response = _login_and_redirect(user)
+        response = _login_and_redirect(user, event_type='registration_login')
         flash('Registration successful! Welcome to Nagaram.', 'success')
         return response
 
@@ -125,7 +145,7 @@ def register_ngo():
         db.session.add(ngo)
         db.session.commit()
 
-        response = _login_and_redirect(user)
+        response = _login_and_redirect(user, event_type='registration_login')
         flash('NGO Registration submitted for verification!', 'success')
         return response
 
@@ -158,7 +178,7 @@ def register_volunteer():
         db.session.add(vol)
         db.session.commit()
 
-        response = _login_and_redirect(user)
+        response = _login_and_redirect(user, event_type='registration_login')
         flash('Volunteer Registration completed!', 'success')
         return response
 
@@ -168,6 +188,8 @@ def register_volunteer():
 @auth_bp.route('/logout')
 @login_required
 def logout():
+    _record_login_event(current_user, current_user.email, 'logout')
+    db.session.commit()
     logout_user()
     session.clear()
     flash('You have logged out successfully.', 'info')
