@@ -23,7 +23,7 @@ DEVELOPER_FOOTER = '''<!-- nagaram-developer-footer --><footer id="nagaram-devel
 
 
 def _initialize_schema(app):
-    """Initialize local/demo storage without allowing a database outage to crash the serverless import."""
+    """Initialize storage without allowing a database outage to crash serverless import."""
     try:
         with app.app_context():
             db.create_all()
@@ -33,8 +33,6 @@ def _initialize_schema(app):
         db.session.rollback()
         app.config['DATABASE_READY'] = False
         app.config['DATABASE_INIT_ERROR'] = str(exc)
-        # Vercel must still be able to serve a controlled health response instead of
-        # crashing every route during function initialization.
         app.logger.exception('NAGARAM database initialization failed')
 
 
@@ -103,35 +101,20 @@ def create_app():
     @app.route('/healthz')
     def healthz():
         if not app.config.get('DATABASE_READY'):
-            return jsonify({
-                'status': 'degraded',
-                'service': 'nagaram',
-                'database': 'unavailable',
-            }), 503
+            return jsonify({'status': 'degraded', 'service': 'nagaram', 'database': 'unavailable'}), 503
         try:
             db.session.query(User.id).limit(1).all()
-            return jsonify({
-                'status': 'ok',
-                'service': 'nagaram',
-                'storage': 'persistent' if Config.DATABASE_URL else 'temporary-preview',
-            }), 200
+            return jsonify({'status': 'ok', 'service': 'nagaram', 'storage': 'persistent' if Config.DATABASE_URL else 'temporary-preview'}), 200
         except Exception:
             db.session.rollback()
-            return jsonify({
-                'status': 'degraded',
-                'service': 'nagaram',
-                'database': 'unavailable',
-            }), 503
+            return jsonify({'status': 'degraded', 'service': 'nagaram', 'database': 'unavailable'}), 503
 
     @app.after_request
     def add_developer_credit_and_prevent_caching(response):
         if response.mimetype == 'text/html' and response.status_code < 400:
             html = response.get_data(as_text=True)
             if 'nagaram-developer-footer' not in html:
-                if '</body>' in html:
-                    html = html.replace('</body>', DEVELOPER_FOOTER + '</body>', 1)
-                else:
-                    html += DEVELOPER_FOOTER
+                html = html.replace('</body>', DEVELOPER_FOOTER + '</body>', 1) if '</body>' in html else html + DEVELOPER_FOOTER
                 response.set_data(html)
                 response.headers['Content-Length'] = str(len(response.get_data()))
         response.headers['Cache-Control'] = 'private, no-store, max-age=0, must-revalidate'
@@ -142,14 +125,15 @@ def create_app():
     @app.context_processor
     def inject_globals():
         unread_notifications = 0
-        if current_user.is_authenticated:
-            try:
+        # Context processors also run while rendering error pages. Never allow a
+        # stale Flask-Login LocalProxy to recursively crash the error handler.
+        try:
+            user = current_user._get_current_object()
+            if getattr(user, 'is_authenticated', False):
                 from models import Notification
-                unread_notifications = Notification.query.filter_by(
-                    user_id=current_user.id, is_read=False
-                ).count()
-            except Exception:
-                db.session.rollback()
+                unread_notifications = Notification.query.filter_by(user_id=user.id, is_read=False).count()
+        except Exception:
+            db.session.rollback()
         return {'unread_notifications': unread_notifications}
 
     @app.errorhandler(403)
@@ -162,7 +146,10 @@ def create_app():
 
     @app.errorhandler(500)
     def internal_error(error):
-        db.session.rollback()
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
         return render_template('500.html'), 500
 
     return app
