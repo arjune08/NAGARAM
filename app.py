@@ -7,6 +7,8 @@ from jinja2.exceptions import TemplateNotFound
 
 from config import Config
 from models import db, User
+# Importing these models registers agricultural tables with SQLAlchemy before create_all.
+import farmer_models
 
 
 class RootTemplateLoader(FileSystemLoader):
@@ -51,10 +53,7 @@ def create_app():
         return (b"", 204)
 
     if os.environ.get("VERCEL") and not Config.DATABASE_URL:
-        raise RuntimeError(
-            "Nagaram production database is not configured. "
-            "Set DATABASE_URL in Vercel Production to the Neon PostgreSQL URL."
-        )
+        raise RuntimeError("Nagaram production database is not configured. Set DATABASE_URL in Vercel Production.")
 
     db.init_app(app)
 
@@ -83,45 +82,29 @@ def create_app():
     from safety import safety_bp
     from api import api_bp
     from main import main_bp
+    from farmer import farmer_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(citizen_bp, url_prefix="/citizen")
+    app.register_blueprint(farmer_bp, url_prefix="/farmer")
     app.register_blueprint(admin_bp, url_prefix="/admin")
     app.register_blueprint(ngo_bp, url_prefix="/ngo")
     app.register_blueprint(volunteer_bp, url_prefix="/volunteer")
     app.register_blueprint(safety_bp, url_prefix="/safety")
     app.register_blueprint(api_bp, url_prefix="/api")
 
-    if Config.DATABASE_URL:
-        with app.app_context():
-            db.create_all()
-    elif not os.environ.get("VERCEL"):
-        with app.app_context():
-            db.create_all()
-
-    @app.before_request
-    def mark_dynamic_auth_responses():
-        return None
+    with app.app_context():
+        db.create_all()
 
     @app.after_request
     def add_developer_credit_and_prevent_caching(response):
-        # Add one consistent developer credit to every HTML page, including
-        # dashboards, login/register pages and error pages. Static/API content
-        # is never modified.
         if response.mimetype == "text/html" and response.status_code < 400:
             html = response.get_data(as_text=True)
             if "nagaram-developer-footer" not in html:
-                if "</body>" in html:
-                    html = html.replace("</body>", DEVELOPER_FOOTER + "</body>", 1)
-                else:
-                    html += DEVELOPER_FOOTER
+                html = html.replace("</body>", DEVELOPER_FOOTER + "</body>", 1) if "</body>" in html else html + DEVELOPER_FOOTER
                 response.set_data(html)
                 response.headers["Content-Length"] = str(len(response.get_data()))
-
-        # Vercel/CDN must never cache a login redirect or a page whose HTML
-        # depends on current_user. Cached protected responses can look like a
-        # login loop even when the cookie itself is valid.
         response.headers["Cache-Control"] = "private, no-store, max-age=0, must-revalidate"
         response.headers["Pragma"] = "no-cache"
         response.headers["Vary"] = "Cookie"
@@ -133,12 +116,9 @@ def create_app():
         if current_user.is_authenticated:
             try:
                 from models import Notification
-                unread_notifications = Notification.query.filter_by(
-                    user_id=current_user.id, is_read=False
-                ).count()
+                unread_notifications = Notification.query.filter_by(user_id=current_user.id, is_read=False).count()
             except Exception:
                 db.session.rollback()
-                unread_notifications = 0
         return {"unread_notifications": unread_notifications}
 
     @app.errorhandler(403)
