@@ -80,8 +80,14 @@ def _create_basic_user(full_name, email, password, phone, role):
     user = User(full_name=full_name, email=email, role=role, phone=phone)
     user.set_password(password)
     db.session.add(user)
-    db.session.commit()
+    db.session.flush()
     return user
+
+
+def _registration_failed(template_name, message):
+    db.session.rollback()
+    flash(message, 'danger')
+    return render_template(template_name)
 
 
 @auth_bp.route('/register/citizen', methods=['GET', 'POST'])
@@ -89,9 +95,13 @@ def register_citizen():
     if request.method == 'POST':
         try:
             user = _create_basic_user(request.form.get('full_name', '').strip(), request.form.get('email', '').strip().lower(), request.form.get('password', ''), request.form.get('phone', '').strip(), 'citizen')
+            db.session.commit()
         except ValueError as e:
+            db.session.rollback()
             flash(str(e), 'warning')
             return render_template('auth/register_citizen.html')
+        except Exception:
+            return _registration_failed('auth/register_citizen.html', 'We could not create your account. Please try again.')
         response = _login_and_redirect(user, 'registration_login', remember=True)
         flash('Registration successful! Welcome to Nagaram.', 'success')
         return response
@@ -106,12 +116,11 @@ def register_farmer():
             db.session.add(FarmerProfile(user_id=user.id, village=request.form.get('village', 'Demo Gram').strip() or 'Demo Gram', district=request.form.get('district', '').strip(), preferred_language=request.form.get('language', 'en')))
             db.session.commit()
         except ValueError as e:
+            db.session.rollback()
             flash(str(e), 'warning')
             return render_template('auth/register_farmer.html')
         except Exception:
-            db.session.rollback()
-            flash('We could not create the farmer profile. Please try again.', 'danger')
-            return render_template('auth/register_farmer.html')
+            return _registration_failed('auth/register_farmer.html', 'We could not create the farmer profile. Please try again.')
         response = _login_and_redirect(user, 'registration_login', remember=True)
         flash('Farmer account created. Your Farm Workspace is ready.', 'success')
         return response
@@ -126,12 +135,11 @@ def register_ngo():
             db.session.add(NGOOrganization(user_id=user.id, name=request.form.get('org_name', '').strip(), registration_number=request.form.get('reg_number', '').strip(), category=request.form.get('category', 'Environment'), verification_status='Pending'))
             db.session.commit()
         except ValueError as e:
+            db.session.rollback()
             flash(str(e), 'warning')
             return render_template('auth/register_ngo.html')
         except Exception:
-            db.session.rollback()
-            flash('We could not complete NGO registration. Please try again.', 'danger')
-            return render_template('auth/register_ngo.html')
+            return _registration_failed('auth/register_ngo.html', 'We could not complete NGO registration. Please try again.')
         response = _login_and_redirect(user, 'registration_login', remember=True)
         flash('NGO Registration submitted for verification!', 'success')
         return response
@@ -146,12 +154,11 @@ def register_volunteer():
             db.session.add(VolunteerProfile(user_id=user.id, skills=request.form.get('skills', ''), availability=request.form.get('availability', 'Weekends')))
             db.session.commit()
         except ValueError as e:
+            db.session.rollback()
             flash(str(e), 'warning')
             return render_template('auth/register_volunteer.html')
         except Exception:
-            db.session.rollback()
-            flash('We could not complete volunteer registration. Please try again.', 'danger')
-            return render_template('auth/register_volunteer.html')
+            return _registration_failed('auth/register_volunteer.html', 'We could not complete volunteer registration. Please try again.')
         response = _login_and_redirect(user, 'registration_login', remember=True)
         flash('Volunteer Registration completed!', 'success')
         return response
