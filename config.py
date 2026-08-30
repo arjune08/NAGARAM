@@ -9,11 +9,10 @@ class Config:
     REMEMBER_COOKIE_NAME='nagaram_remember';REMEMBER_COOKIE_HTTPONLY=True;REMEMBER_COOKIE_SECURE=True if os.environ.get('VERCEL') else False;REMEMBER_COOKIE_SAMESITE='None' if os.environ.get('VERCEL') else 'Lax';REMEMBER_COOKIE_DOMAIN=os.environ.get('REMEMBER_COOKIE_DOMAIN') or None;REMEMBER_COOKIE_PATH='/';REMEMBER_COOKIE_DURATION=PERSISTENT_LOGIN_LIFETIME;REMEMBER_COOKIE_REFRESH_EACH_REQUEST=True;SESSION_PROTECTION=None
     DATABASE_URL=os.environ.get('DATABASE_URL') or os.environ.get('POSTGRES_URL') or os.environ.get('POSTGRES_PRISMA_URL') or os.environ.get('NEON_DATABASE_URL')
     if DATABASE_URL:
-        if DATABASE_URL.startswith('postgres://'):DATABASE_URL=DATABASE_URL.replace('postgres://','postgresql://',1)
+        if DATABASE_URL.startswith('postgres://'):DATABASE_URL=DATABASE_URL.replace('postgres://','postgresql+psycopg://',1)
+        elif DATABASE_URL.startswith('postgresql://'):DATABASE_URL=DATABASE_URL.replace('postgresql://','postgresql+psycopg://',1)
         SQLALCHEMY_DATABASE_URI=DATABASE_URL;SQLALCHEMY_ENGINE_OPTIONS={'pool_pre_ping':True,'pool_recycle':300}
     elif os.environ.get('VERCEL'):
-        # Preview deployments stay runnable even when a database integration is not attached.
-        # Production should still set DATABASE_URL for persistent shared data.
         SQLALCHEMY_DATABASE_URI='sqlite:////tmp/nagaram_preview.db';SQLALCHEMY_ENGINE_OPTIONS={};DATABASE_CONFIGURATION_WARNING='DATABASE_URL is not configured; this Vercel instance is using temporary preview storage.'
     else:
         SQLALCHEMY_DATABASE_URI='sqlite:///urbanpulse.db';SQLALCHEMY_ENGINE_OPTIONS={}
