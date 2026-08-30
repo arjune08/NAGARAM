@@ -23,17 +23,28 @@ DEVELOPER_FOOTER = '''<!-- nagaram-developer-footer --><footer id="nagaram-devel
 
 
 def _initialize_schema(app):
-    """Initialize storage without allowing a database outage to crash serverless import."""
+    """Initialize storage without allowing a database outage to crash serverless import.
+
+    Flask-SQLAlchemy sessions are scoped to an application context. Keep every
+    session operation inside that context; a failed create_all must never call
+    db.session.rollback() after the context has already been popped.
+    """
     try:
         with app.app_context():
-            db.create_all()
+            try:
+                db.create_all()
+            except Exception:
+                try:
+                    db.session.rollback()
+                except Exception:
+                    pass
+                raise
         app.config['DATABASE_READY'] = True
         app.config['DATABASE_INIT_ERROR'] = None
     except Exception as exc:
-        db.session.rollback()
         app.config['DATABASE_READY'] = False
         app.config['DATABASE_INIT_ERROR'] = str(exc)
-        app.logger.exception('NAGARAM database initialization failed')
+        app.logger.exception('NAGARAM database initialization failed; continuing in degraded mode')
 
 
 def create_app():
@@ -73,7 +84,10 @@ def create_app():
         except (TypeError, ValueError):
             return None
         except Exception:
-            db.session.rollback()
+            try:
+                db.session.rollback()
+            except Exception:
+                pass
             return None
 
     from auth import auth_bp
@@ -106,7 +120,10 @@ def create_app():
             db.session.query(User.id).limit(1).all()
             return jsonify({'status': 'ok', 'service': 'nagaram', 'storage': 'persistent' if Config.DATABASE_URL else 'temporary-preview'}), 200
         except Exception:
-            db.session.rollback()
+            try:
+                db.session.rollback()
+            except Exception:
+                pass
             return jsonify({'status': 'degraded', 'service': 'nagaram', 'database': 'unavailable'}), 503
 
     @app.after_request
@@ -125,15 +142,16 @@ def create_app():
     @app.context_processor
     def inject_globals():
         unread_notifications = 0
-        # Context processors also run while rendering error pages. Never allow a
-        # stale Flask-Login LocalProxy to recursively crash the error handler.
         try:
             user = current_user._get_current_object()
             if getattr(user, 'is_authenticated', False):
                 from models import Notification
                 unread_notifications = Notification.query.filter_by(user_id=user.id, is_read=False).count()
         except Exception:
-            db.session.rollback()
+            try:
+                db.session.rollback()
+            except Exception:
+                pass
         return {'unread_notifications': unread_notifications}
 
     @app.errorhandler(403)
