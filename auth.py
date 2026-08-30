@@ -29,17 +29,25 @@ def _safe_next_url():
 def _record_login_event(user, email, event_type):
     db.session.add(UserLoginEvent(user_id=user.id if user else None, email=(email or '').strip().lower(), event_type=event_type))
 
-def _login_and_redirect(user, event_type='login', remember=False):
-    login_user(user, remember=remember, fresh=True)
-    session.permanent = True
-    session.modified = True
-    _record_login_event(user, user.email, event_type)
-    db.session.commit()
+def _workspace_redirect(user):
     next_url = _safe_next_url()
     if next_url:
         return redirect(next_url)
     routes = {'admin':'admin.command_center','ngo':'ngo.dashboard','volunteer':'volunteer.dashboard','farmer':'farmer.dashboard'}
     return redirect(url_for(routes.get(user.role, 'citizen.dashboard')))
+
+def _login_and_redirect(user, event_type='login', remember=False):
+    # This helper only accepts a concrete User model, never Flask-Login's LocalProxy.
+    login_user(user, remember=remember, fresh=True)
+    session.permanent = True
+    session.modified = True
+    try:
+        _record_login_event(user, user.email, event_type)
+        db.session.commit()
+    except Exception:
+        # Audit logging must never take down authentication.
+        db.session.rollback()
+    return _workspace_redirect(user)
 
 def _ensure_local_user(email, password, metadata):
     user = User.query.filter_by(email=email).first()
@@ -68,9 +76,16 @@ def _supabase_metadata(form, role):
 
 @auth_bp.route('/login', methods=['GET','POST'])
 def login():
+    # Do not re-login or audit an already authenticated session. This previously
+    # triggered a Flask-Login LocalProxy recursion in the Vercel serverless runtime.
     if current_user.is_authenticated:
-        # Resolve Flask-Login's LocalProxy before passing it into session/audit code.
-        return _login_and_redirect(current_user._get_current_object(), 'session_refresh', remember=True)
+        try:
+            user = current_user._get_current_object()
+            return _workspace_redirect(user)
+        except Exception:
+            # Clear a corrupted/stale session and render a normal login page.
+            session.clear()
+            return render_template('login.html')
     if request.method == 'POST':
         email = request.form.get('email','').strip().lower()
         password = request.form.get('password','')
@@ -91,8 +106,11 @@ def login():
         except SupabaseAuthError as remote_error:
             user = User.query.filter_by(email=email).first()
             if not user or not user.check_password(password):
-                _record_login_event(user, email, 'login_failed')
-                db.session.commit()
+                try:
+                    _record_login_event(user, email, 'login_failed')
+                    db.session.commit()
+                except Exception:
+                    db.session.rollback()
                 message = str(remote_error)
                 flash('Invalid email address or password.' if 'Invalid login credentials' in message else message, 'danger')
                 return render_template('login.html')
@@ -172,6 +190,11 @@ def register_volunteer():
 @auth_bp.route('/logout')
 @login_required
 def logout():
-    user = current_user._get_current_object()
-    _record_login_event(user, user.email, 'logout'); db.session.commit(); logout_user(); session.clear(); flash('You have logged out successfully.', 'info')
+    try:
+        user = current_user._get_current_object()
+        _record_login_event(user, user.email, 'logout')
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+    logout_user(); session.clear(); flash('You have logged out successfully.', 'info')
     return redirect(url_for('main.landing'))
