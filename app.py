@@ -1,5 +1,5 @@
 import os
-from flask import Flask, jsonify, render_template, send_from_directory
+from flask import Flask, jsonify, render_template, send_from_directory, session
 from flask_login import LoginManager, current_user
 from jinja2 import FileSystemLoader
 from jinja2.exceptions import TemplateNotFound
@@ -23,12 +23,6 @@ DEVELOPER_FOOTER = '''<!-- nagaram-developer-footer --><footer id="nagaram-devel
 
 
 def _initialize_schema(app):
-    """Initialize storage without allowing a database outage to crash serverless import.
-
-    Flask-SQLAlchemy sessions are scoped to an application context. Keep every
-    session operation inside that context; a failed create_all must never call
-    db.session.rollback() after the context has already been popped.
-    """
     try:
         with app.app_context():
             try:
@@ -77,10 +71,73 @@ def create_app():
     login_manager.session_protection = None
     login_manager.init_app(app)
 
+    def _restore_supabase_user():
+        """Rebuild the local Flask user when a Vercel instance lost /tmp storage.
+        Supabase remains the source of truth for the authenticated identity.
+        """
+        access_token = session.get('supabase_access_token')
+        refresh_token = session.get('supabase_refresh_token')
+        if not access_token and not refresh_token:
+            return None
+        try:
+            from supabase_auth import get_user, refresh_session, SupabaseAuthError
+            try:
+                remote_user = get_user(access_token) if access_token else None
+            except SupabaseAuthError:
+                refreshed = refresh_session(refresh_token)
+                session['supabase_access_token'] = refreshed.get('access_token', '')
+                session['supabase_refresh_token'] = refreshed.get('refresh_token', refresh_token)
+                session['supabase_user_id'] = (refreshed.get('user') or {}).get('id', session.get('supabase_user_id', ''))
+                remote_user = refreshed.get('user') or get_user(session.get('supabase_access_token'))
+
+            if not remote_user:
+                return None
+            email = (remote_user.get('email') or session.get('supabase_email') or '').strip().lower()
+            if not email:
+                return None
+            metadata = remote_user.get('user_metadata') or session.get('supabase_metadata') or {}
+            user = User.query.filter_by(email=email).first()
+            if user is None:
+                user = User(
+                    full_name=metadata.get('full_name') or email.split('@')[0],
+                    email=email,
+                    role=metadata.get('role') or 'citizen',
+                    phone=metadata.get('phone') or ''
+                )
+                # Supabase validates credentials; this local hash is never used
+                # for remote-session restoration.
+                user.set_password(os.urandom(32).hex())
+                db.session.add(user)
+                db.session.flush()
+                if user.role == 'farmer':
+                    from farmer_models import FarmerProfile
+                    db.session.add(FarmerProfile(
+                        user_id=user.id,
+                        village=metadata.get('village') or 'Demo Gram',
+                        district=metadata.get('district') or '',
+                        preferred_language=metadata.get('preferred_language') or 'en'
+                    ))
+                db.session.commit()
+            session['supabase_email'] = email
+            session['supabase_metadata'] = metadata
+            session['_user_id'] = str(user.id)
+            session['_fresh'] = False
+            session.permanent = True
+            session.modified = True
+            return user
+        except Exception:
+            try:
+                db.session.rollback()
+            except Exception:
+                pass
+            return None
+
     @login_manager.user_loader
     def load_user(user_id):
         try:
-            return db.session.get(User, int(user_id))
+            user = db.session.get(User, int(user_id))
+            if user is not None:
+                return user
         except (TypeError, ValueError):
             return None
         except Exception:
@@ -88,7 +145,7 @@ def create_app():
                 db.session.rollback()
             except Exception:
                 pass
-            return None
+        return _restore_supabase_user()
 
     from auth import auth_bp
     from citizen import citizen_bp
