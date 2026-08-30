@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, render_template, send_from_directory
+from flask import Flask, jsonify, render_template, send_from_directory
 from flask_login import LoginManager, current_user
 from jinja2 import FileSystemLoader
 from jinja2.exceptions import TemplateNotFound
@@ -44,7 +44,7 @@ def create_app():
 
     @app.route("/static/<path:filename>")
     def static_files(filename):
-        filename = filename.rsplit("/", 1)[-1]
+        # Keep nested static paths working. send_from_directory safely rejects traversal.
         return send_from_directory(app.root_path, filename)
 
     @app.route("/favicon.ico")
@@ -96,6 +96,15 @@ def create_app():
 
     with app.app_context():
         db.create_all()
+
+    @app.route("/healthz")
+    def healthz():
+        try:
+            db.session.query(User.id).limit(1).all()
+            return jsonify({"status": "ok", "service": "nagaram"}), 200
+        except Exception:
+            db.session.rollback()
+            return jsonify({"status": "degraded", "service": "nagaram", "database": "unavailable"}), 503
 
     @app.after_request
     def add_developer_credit_and_prevent_caching(response):
