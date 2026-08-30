@@ -52,33 +52,25 @@ def _ensure_local_user(email, password, metadata):
         db.session.add(user)
         db.session.flush()
     else:
-        changed = False
         if full_name and user.full_name != full_name:
-            user.full_name = full_name; changed = True
+            user.full_name = full_name
         if role and user.role != role:
-            user.role = role; changed = True
+            user.role = role
         if phone and user.phone != phone:
-            user.phone = phone; changed = True
-        if changed:
-            db.session.flush()
+            user.phone = phone
+        db.session.flush()
     if user.role == 'farmer' and not FarmerProfile.query.filter_by(user_id=user.id).first():
         db.session.add(FarmerProfile(user_id=user.id, village=metadata.get('village') or 'Demo Gram', district=metadata.get('district') or '', preferred_language=metadata.get('preferred_language') or 'en'))
     return user
 
 def _supabase_metadata(form, role):
-    return {
-        'full_name': form.get('full_name', '').strip(),
-        'role': role,
-        'phone': form.get('phone', '').strip(),
-        'village': form.get('village', '').strip(),
-        'district': form.get('district', '').strip(),
-        'preferred_language': form.get('language', 'en'),
-    }
+    return {'full_name':form.get('full_name','').strip(),'role':role,'phone':form.get('phone','').strip(),'village':form.get('village','').strip(),'district':form.get('district','').strip(),'preferred_language':form.get('language','en')}
 
 @auth_bp.route('/login', methods=['GET','POST'])
 def login():
     if current_user.is_authenticated:
-        return _login_and_redirect(current_user, 'session_refresh', remember=True)
+        # Resolve Flask-Login's LocalProxy before passing it into session/audit code.
+        return _login_and_redirect(current_user._get_current_object(), 'session_refresh', remember=True)
     if request.method == 'POST':
         email = request.form.get('email','').strip().lower()
         password = request.form.get('password','')
@@ -97,12 +89,12 @@ def login():
             flash(f'Welcome back, {user.full_name}!', 'success')
             return response
         except SupabaseAuthError as remote_error:
-            # Existing pre-Supabase users remain usable while their accounts are synced.
             user = User.query.filter_by(email=email).first()
             if not user or not user.check_password(password):
                 _record_login_event(user, email, 'login_failed')
                 db.session.commit()
-                flash(str(remote_error) if 'Invalid login credentials' not in str(remote_error) else 'Invalid email address or password.', 'danger')
+                message = str(remote_error)
+                flash('Invalid email address or password.' if 'Invalid login credentials' in message else message, 'danger')
                 return render_template('login.html')
             try:
                 remote = supabase_sign_up(email, password, {'full_name':user.full_name, 'role':user.role, 'phone':user.phone or ''})
@@ -132,30 +124,21 @@ def _create_basic_user(full_name, email, password, phone, role):
     return user
 
 def _registration_failed(template_name, message):
-    db.session.rollback()
-    flash(message, 'danger')
-    return render_template(template_name)
+    db.session.rollback(); flash(message, 'danger'); return render_template(template_name)
 
 def _register(template, role, profile_factory, success):
-    email = request.form.get('email','').strip().lower()
-    password = request.form.get('password','')
-    metadata = _supabase_metadata(request.form, role)
+    email = request.form.get('email','').strip().lower(); password = request.form.get('password',''); metadata = _supabase_metadata(request.form, role)
     if not metadata['full_name'] or not email or len(password) < 6:
-        flash('Enter a name, valid email and a password of at least 6 characters.', 'warning')
-        return render_template(template)
+        flash('Enter a name, valid email and a password of at least 6 characters.', 'warning'); return render_template(template)
     try:
         remote = supabase_sign_up(email, password, metadata)
     except SupabaseAuthError as exc:
-        flash(f'Account could not be created: {exc}', 'danger')
-        return render_template(template)
+        flash(f'Account could not be created: {exc}', 'danger'); return render_template(template)
     try:
         user = _create_basic_user(metadata['full_name'], email, password, metadata['phone'], role)
-        profile_factory(user)
-        db.session.commit()
+        profile_factory(user); db.session.commit()
     except ValueError as e:
-        db.session.rollback()
-        flash(str(e), 'warning')
-        return render_template(template)
+        db.session.rollback(); flash(str(e), 'warning'); return render_template(template)
     except Exception:
         return _registration_failed(template, 'Your secure account was created, but the local workspace profile could not be prepared. Please sign in again.')
     session['supabase_access_token'] = remote.get('access_token', '')
@@ -164,39 +147,31 @@ def _register(template, role, profile_factory, success):
         response = _login_and_redirect(user, 'supabase_registration', remember=True)
     except Exception:
         return _registration_failed(template, 'Your account was created, but automatic sign-in failed. Please sign in manually.')
-    flash(success, 'success')
-    return response
+    flash(success, 'success'); return response
 
 @auth_bp.route('/register/citizen', methods=['GET','POST'])
 def register_citizen():
-    if request.method == 'POST':
-        return _register('auth/register_citizen.html', 'citizen', lambda user: None, 'Registration successful! Welcome to NAGARAM.')
+    if request.method == 'POST': return _register('auth/register_citizen.html', 'citizen', lambda user: None, 'Registration successful! Welcome to NAGARAM.')
     return render_template('auth/register_citizen.html')
 
 @auth_bp.route('/register/farmer', methods=['GET','POST'])
 def register_farmer():
-    if request.method == 'POST':
-        return _register('auth/register_farmer.html', 'farmer', lambda user: db.session.add(FarmerProfile(user_id=user.id, village=request.form.get('village','Demo Gram').strip() or 'Demo Gram', district=request.form.get('district','').strip(), preferred_language=request.form.get('language','en'))), 'Farmer account created. Your Farm Workspace is ready.')
+    if request.method == 'POST': return _register('auth/register_farmer.html', 'farmer', lambda user: db.session.add(FarmerProfile(user_id=user.id, village=request.form.get('village','Demo Gram').strip() or 'Demo Gram', district=request.form.get('district','').strip(), preferred_language=request.form.get('language','en'))), 'Farmer account created. Your Farm Workspace is ready.')
     return render_template('auth/register_farmer.html')
 
 @auth_bp.route('/register/ngo', methods=['GET','POST'])
 def register_ngo():
-    if request.method == 'POST':
-        return _register('auth/register_ngo.html', 'ngo', lambda user: db.session.add(NGOOrganization(user_id=user.id, name=request.form.get('org_name','').strip(), registration_number=request.form.get('reg_number','').strip(), category=request.form.get('category','Environment'), verification_status='Pending')), 'Organization registration submitted successfully!')
+    if request.method == 'POST': return _register('auth/register_ngo.html', 'ngo', lambda user: db.session.add(NGOOrganization(user_id=user.id, name=request.form.get('org_name','').strip(), registration_number=request.form.get('reg_number','').strip(), category=request.form.get('category','Environment'), verification_status='Pending')), 'Organization registration submitted successfully!')
     return render_template('auth/register_ngo.html')
 
 @auth_bp.route('/register/volunteer', methods=['GET','POST'])
 def register_volunteer():
-    if request.method == 'POST':
-        return _register('auth/register_volunteer.html', 'volunteer', lambda user: db.session.add(VolunteerProfile(user_id=user.id, skills=request.form.get('skills',''), availability=request.form.get('availability','Weekends'))), 'Field worker registration completed!')
+    if request.method == 'POST': return _register('auth/register_volunteer.html', 'volunteer', lambda user: db.session.add(VolunteerProfile(user_id=user.id, skills=request.form.get('skills',''), availability=request.form.get('availability','Weekends'))), 'Field worker registration completed!')
     return render_template('auth/register_volunteer.html')
 
 @auth_bp.route('/logout')
 @login_required
 def logout():
-    _record_login_event(current_user, current_user.email, 'logout')
-    db.session.commit()
-    logout_user()
-    session.clear()
-    flash('You have logged out successfully.', 'info')
+    user = current_user._get_current_object()
+    _record_login_event(user, user.email, 'logout'); db.session.commit(); logout_user(); session.clear(); flash('You have logged out successfully.', 'info')
     return redirect(url_for('main.landing'))
