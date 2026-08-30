@@ -37,7 +37,6 @@ def _workspace_redirect(user):
     return redirect(url_for(routes.get(user.role, 'citizen.dashboard')))
 
 def _login_and_redirect(user, event_type='login', remember=False):
-    # This helper only accepts a concrete User model, never Flask-Login's LocalProxy.
     login_user(user, remember=remember, fresh=True)
     session.permanent = True
     session.modified = True
@@ -45,7 +44,6 @@ def _login_and_redirect(user, event_type='login', remember=False):
         _record_login_event(user, user.email, event_type)
         db.session.commit()
     except Exception:
-        # Audit logging must never take down authentication.
         db.session.rollback()
     return _workspace_redirect(user)
 
@@ -76,59 +74,54 @@ def _supabase_metadata(form, role):
 
 @auth_bp.route('/login', methods=['GET','POST'])
 def login():
-    # Do not re-login or audit an already authenticated session. This previously
-    # triggered a Flask-Login LocalProxy recursion in the Vercel serverless runtime.
-    if current_user.is_authenticated:
-        try:
-            user = current_user._get_current_object()
-            return _workspace_redirect(user)
-        except Exception:
-            # Clear a corrupted/stale session and render a normal login page.
-            session.clear()
-            return render_template('login.html')
-    if request.method == 'POST':
-        email = request.form.get('email','').strip().lower()
-        password = request.form.get('password','')
-        remember = request.form.get('remember') == 'on'
-        if not email or not password:
-            flash('Enter your email and password.', 'warning')
-            return render_template('login.html')
-        try:
-            remote = supabase_sign_in(email, password)
-            remote_user = remote.get('user') or {}
-            metadata = remote_user.get('user_metadata') or {}
-            user = _ensure_local_user(email, password, metadata)
-            session['supabase_access_token'] = remote.get('access_token', '')
-            session['supabase_user_id'] = remote_user.get('id', '')
-            response = _login_and_redirect(user, 'supabase_login_success', remember=remember)
-            flash(f'Welcome back, {user.full_name}!', 'success')
-            return response
-        except SupabaseAuthError as remote_error:
-            user = User.query.filter_by(email=email).first()
-            if not user or not user.check_password(password):
-                try:
-                    _record_login_event(user, email, 'login_failed')
-                    db.session.commit()
-                except Exception:
-                    db.session.rollback()
-                message = str(remote_error)
-                flash('Invalid email address or password.' if 'Invalid login credentials' in message else message, 'danger')
-                return render_template('login.html')
+    # Never inspect Flask-Login's LocalProxy on GET. In the Vercel serverless
+    # runtime, stale sessions could recurse while resolving current_user before
+    # Flask had fully established request globals. Rendering the login form is
+    # safe for both anonymous and already-authenticated visitors.
+    if request.method == 'GET':
+        return render_template('login.html')
+
+    email = request.form.get('email','').strip().lower()
+    password = request.form.get('password','')
+    remember = request.form.get('remember') == 'on'
+    if not email or not password:
+        flash('Enter your email and password.', 'warning')
+        return render_template('login.html')
+    try:
+        remote = supabase_sign_in(email, password)
+        remote_user = remote.get('user') or {}
+        metadata = remote_user.get('user_metadata') or {}
+        user = _ensure_local_user(email, password, metadata)
+        session['supabase_access_token'] = remote.get('access_token', '')
+        session['supabase_user_id'] = remote_user.get('id', '')
+        response = _login_and_redirect(user, 'supabase_login_success', remember=remember)
+        flash(f'Welcome back, {user.full_name}!', 'success')
+        return response
+    except SupabaseAuthError as remote_error:
+        user = User.query.filter_by(email=email).first()
+        if not user or not user.check_password(password):
             try:
-                remote = supabase_sign_up(email, password, {'full_name':user.full_name, 'role':user.role, 'phone':user.phone or ''})
-                session['supabase_access_token'] = remote.get('access_token', '')
-                session['supabase_user_id'] = (remote.get('user') or {}).get('id', '')
-            except SupabaseAuthError:
-                pass
-            try:
-                response = _login_and_redirect(user, 'legacy_login_sync', remember=remember)
+                _record_login_event(user, email, 'login_failed')
+                db.session.commit()
             except Exception:
                 db.session.rollback()
-                flash('We could not complete sign-in. Please try again.', 'danger')
-                return render_template('login.html')
-            flash(f'Welcome back, {user.full_name}!', 'success')
-            return response
-    return render_template('login.html')
+            message = str(remote_error)
+            flash('Invalid email address or password.' if 'Invalid login credentials' in message else message, 'danger')
+            return render_template('login.html')
+        try:
+            remote = supabase_sign_up(email, password, {'full_name':user.full_name, 'role':user.role, 'phone':user.phone or ''})
+            session['supabase_access_token'] = remote.get('access_token', '')
+            session['supabase_user_id'] = (remote.get('user') or {}).get('id', '')
+        except SupabaseAuthError:
+            pass
+        try:
+            response = _login_and_redirect(user, 'legacy_login_sync', remember=remember)
+        except Exception:
+            db.session.rollback()
+            flash('We could not complete sign-in. Please try again.', 'danger')
+            return render_template('login.html')
+        flash(f'Welcome back, {user.full_name}!', 'success')
+        return response
 
 def _create_basic_user(full_name, email, password, phone, role):
     if not full_name or not email or len(password) < 6:
