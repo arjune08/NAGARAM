@@ -1,25 +1,61 @@
 from flask import Blueprint, render_template, redirect, url_for
 from flask_login import current_user, login_required
-from models import Complaint, InfrastructureAsset
+from sqlalchemy.exc import SQLAlchemyError
+from models import Complaint, InfrastructureAsset, db
 
 main_bp = Blueprint('main', __name__)
+
+
+def _landing_metrics():
+    """Return live metrics when storage is available, otherwise safe defaults."""
+    try:
+        return {
+            'total_complaints': Complaint.query.count(),
+            'resolved_complaints': Complaint.query.filter(
+                Complaint.status.in_(['Resolved', 'Confirmed'])
+            ).count(),
+            'total_assets': InfrastructureAsset.query.count(),
+        }
+    except SQLAlchemyError:
+        db.session.rollback()
+    except Exception:
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+    return {'total_complaints': 0, 'resolved_complaints': 0, 'total_assets': 0}
+
 
 @main_bp.route('/')
 def landing():
     if current_user.is_authenticated:
-        if current_user.role == 'admin': return redirect(url_for('admin.command_center'))
-        if current_user.role == 'farmer': return redirect(url_for('farmer.dashboard'))
-        if current_user.role == 'citizen': return redirect(url_for('citizen.dashboard'))
-        if current_user.role == 'ngo': return redirect(url_for('ngo.dashboard'))
-        if current_user.role == 'volunteer': return redirect(url_for('volunteer.dashboard'))
-    total_complaints=Complaint.query.count(); resolved_complaints=Complaint.query.filter(Complaint.status.in_(['Resolved','Confirmed'])).count(); total_assets=InfrastructureAsset.query.count()
-    return render_template('landing.html',total_complaints=total_complaints,resolved_complaints=resolved_complaints,total_assets=total_assets,sustainability_score=82.4)
+        destinations = {
+            'admin': 'admin.command_center',
+            'farmer': 'farmer.dashboard',
+            'citizen': 'citizen.dashboard',
+            'ngo': 'ngo.dashboard',
+            'volunteer': 'volunteer.dashboard',
+        }
+        endpoint = destinations.get(getattr(current_user, 'role', None))
+        if endpoint:
+            return redirect(url_for(endpoint))
+
+    metrics = _landing_metrics()
+    return render_template(
+        'landing.html',
+        **metrics,
+        sustainability_score=82.4,
+    )
+
 
 @main_bp.route('/workspace')
 @login_required
 def workspace():
-    if current_user.role=='farmer': return redirect(url_for('farmer.dashboard'))
-    if current_user.role=='citizen': return redirect(url_for('citizen.dashboard'))
-    if current_user.role=='admin': return redirect(url_for('admin.command_center'))
-    if current_user.role=='ngo': return redirect(url_for('ngo.dashboard'))
-    return redirect(url_for('volunteer.dashboard'))
+    destinations = {
+        'farmer': 'farmer.dashboard',
+        'citizen': 'citizen.dashboard',
+        'admin': 'admin.command_center',
+        'ngo': 'ngo.dashboard',
+        'volunteer': 'volunteer.dashboard',
+    }
+    return redirect(url_for(destinations.get(current_user.role, 'main.landing')))
