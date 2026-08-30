@@ -1,1 +1,53 @@
-<aside class="sidebar"><div class="sidebar-ambient"></div><div class="sidebar-header"><div class="brand-logo brand-logo-image"><img src="{{ url_for('static_files', filename='nagaram-logo.png') }}" alt="Nagaram logo"></div><div class="brand-text"><div class="brand-name">Nagaram</div><div class="brand-sub">Community + Farm Intelligence</div></div></div><nav class="sidebar-nav">{% if current_user.role == 'farmer' %}<div class="nav-group-label">AGRI-NAGARAM</div><a href="{{ url_for('farmer.dashboard') }}" class="nav-item {% if request.endpoint=='farmer.dashboard' %}active{% endif %}"><i data-lucide="sprout"></i><span class="nav-text">Farm Console</span></a><a href="{{ url_for('farmer.farms') }}" class="nav-item"><i data-lucide="map"></i><span class="nav-text">My Farms</span></a><a href="{{ url_for('farmer.health') }}" class="nav-item"><i data-lucide="scan-line"></i><span class="nav-text">Crop Health</span></a><a href="{{ url_for('farmer.market') }}" class="nav-item"><i data-lucide="store"></i><span class="nav-text">Farm-to-Market</span></a><div class="nav-group-label">Shared Action</div><a href="{{ url_for('farmer.report_issue') }}" class="nav-item"><i data-lucide="file-warning"></i><span class="nav-text">Report Farm Issue</span></a><a href="{{ url_for('citizen.emergency') }}" class="nav-item danger-nav"><i data-lucide="heart-pulse"></i><span class="nav-text">Emergency Center</span></a>{% elif current_user.role == 'citizen' %}<div class="nav-group-label">Citizen Portal</div><a href="{{ url_for('citizen.dashboard') }}" class="nav-item active"><i data-lucide="home"></i><span class="nav-text">My Dashboard</span></a><a href="{{ url_for('citizen.report_issue') }}" class="nav-item"><i data-lucide="plus-circle"></i><span class="nav-text">Report Issue</span></a><a href="{{ url_for('citizen.my_complaints') }}" class="nav-item"><i data-lucide="file-text"></i><span class="nav-text">My Reports</span></a><div class="nav-group-label">Explore</div><a href="{{ url_for('citizen.city_map') }}" class="nav-item"><i data-lucide="map-pin"></i><span class="nav-text">Community Map</span></a><a href="{{ url_for('citizen.community') }}" class="nav-item"><i data-lucide="users-round"></i><span class="nav-text">Community</span></a>{% elif current_user.role == 'admin' %}<div class="nav-group-label">Operations</div><a href="{{ url_for('admin.command_center') }}" class="nav-item active"><i data-lucide="layout-dashboard"></i><span class="nav-text">Command Center</span></a><a href="{{ url_for('admin.issues') }}" class="nav-item"><i data-lucide="file-warning"></i><span class="nav-text">Issues</span></a><div class="nav-group-label">Intelligence</div><a href="{{ url_for('admin.digital_twin') }}" class="nav-item"><i data-lucide="layers-3"></i><span class="nav-text">Digital Twin</span></a><a href="{{ url_for('admin.risk_engine') }}" class="nav-item"><i data-lucide="shield-alert"></i><span class="nav-text">Risk Engine</span></a><a href="{{ url_for('admin.data_hub') }}" class="nav-item"><i data-lucide="database-zap"></i><span class="nav-text">Data Hub</span></a>{% elif current_user.role == 'ngo' %}<div class="nav-group-label">NGO Hub</div><a href="{{ url_for('ngo.dashboard') }}" class="nav-item active"><i data-lucide="building-2"></i><span class="nav-text">Organization Hub</span></a><a href="{{ url_for('ngo.initiatives') }}" class="nav-item"><i data-lucide="target"></i><span class="nav-text">Initiatives</span></a><a href="{{ url_for('ngo.volunteers') }}" class="nav-item"><i data-lucide="user-plus"></i><span class="nav-text">Volunteers</span></a>{% else %}<div class="nav-group-label">Volunteer Portal</div><a href="{{ url_for('volunteer.dashboard') }}" class="nav-item active"><i data-lucide="user-check"></i><span class="nav-text">My Dashboard</span></a><a href="{{ url_for('volunteer.opportunities') }}" class="nav-item"><i data-lucide="search"></i><span class="nav-text">Opportunities</span></a>{% endif %}</nav><div class="sidebar-footer"><div class="ai-status" style="margin-bottom:.75rem;width:100%;justify-content:center"><div class="ai-dot"></div><span class="nav-text">Action Network Active</span></div><div class="user-chip"><div class="user-avatar">{{ current_user.full_name[:1].upper() }}</div><div><div class="user-name nav-text">{{ current_user.full_name.split()[0] }}</div><div class="user-role nav-text">{{ current_user.role.capitalize() }}</div></div></div><a href="{{ url_for('auth.logout') }}" class="btn btn-secondary btn-full btn-sm"><i data-lucide="log-out"></i><span class="nav-text">Sign Out</span></a></div></aside>
+<aside class="sidebar" id="appSidebar" aria-label="Primary navigation">
+  <div class="sidebar-ambient"></div>
+  <div class="sidebar-header">
+    <a href="{{ url_for('main.landing') }}" class="sidebar-brand" aria-label="NAGARAM home">
+      <div class="brand-logo brand-logo-image"><img src="{{ url_for('static_files', filename='nagaram-logo.png') }}" alt="NAGARAM logo"></div>
+      <div class="brand-text"><div class="brand-name">NAGARAM</div><div class="brand-sub">City + Community + Farm</div></div>
+    </a>
+    <button class="sidebar-close" id="sidebarClose" type="button" aria-label="Close navigation"><i data-lucide="x"></i></button>
+  </div>
+  <nav class="sidebar-nav" aria-label="Workspace navigation">
+  {% set ep=request.endpoint or '' %}
+  {% if current_user.role == 'farmer' %}
+    <div class="nav-group-label">FARM WORKSPACE</div>
+    <a href="{{ url_for('farmer.dashboard') }}" class="nav-item {% if ep=='farmer.dashboard' %}active{% endif %}"><i data-lucide="layout-dashboard"></i><span class="nav-text">Farm Overview</span></a>
+    <a href="{{ url_for('farmer.farms') }}" class="nav-item {% if ep=='farmer.farms' %}active{% endif %}"><i data-lucide="map"></i><span class="nav-text">My Farms</span></a>
+    <a href="{{ url_for('farmer.health') }}" class="nav-item {% if ep=='farmer.health' %}active{% endif %}"><i data-lucide="scan-line"></i><span class="nav-text">Crop Health</span></a>
+    <a href="{{ url_for('farmer.market') }}" class="nav-item {% if ep=='farmer.market' %}active{% endif %}"><i data-lucide="store"></i><span class="nav-text">Market & Buyers</span></a>
+    <div class="nav-group-label">SHARED ACTION</div>
+    <a href="{{ url_for('farmer.report_issue') }}" class="nav-item {% if ep=='farmer.report_issue' %}active{% endif %}"><i data-lucide="triangle-alert"></i><span class="nav-text">Report Farm Issue</span></a>
+    <a href="{{ url_for('citizen.emergency') }}" class="nav-item danger-nav"><i data-lucide="heart-pulse"></i><span class="nav-text">Emergency Center</span></a>
+  {% elif current_user.role == 'citizen' %}
+    <div class="nav-group-label">CITIZEN WORKSPACE</div>
+    <a href="{{ url_for('citizen.dashboard') }}" class="nav-item {% if ep=='citizen.dashboard' %}active{% endif %}"><i data-lucide="layout-dashboard"></i><span class="nav-text">My Dashboard</span></a>
+    <a href="{{ url_for('citizen.report_issue') }}" class="nav-item {% if ep=='citizen.report_issue' %}active{% endif %}"><i data-lucide="circle-plus"></i><span class="nav-text">Report Issue</span></a>
+    <a href="{{ url_for('citizen.my_complaints') }}" class="nav-item {% if ep=='citizen.my_complaints' %}active{% endif %}"><i data-lucide="clipboard-list"></i><span class="nav-text">My Reports</span></a>
+    <div class="nav-group-label">EXPLORE</div>
+    <a href="{{ url_for('citizen.city_map') }}" class="nav-item {% if ep=='citizen.city_map' %}active{% endif %}"><i data-lucide="map"></i><span class="nav-text">Community Map</span></a>
+    <a href="{{ url_for('citizen.community') }}" class="nav-item {% if ep=='citizen.community' %}active{% endif %}"><i data-lucide="users-round"></i><span class="nav-text">Community</span></a>
+  {% elif current_user.role == 'admin' %}
+    <div class="nav-group-label">OPERATIONS</div>
+    <a href="{{ url_for('admin.command_center') }}" class="nav-item {% if ep=='admin.command_center' %}active{% endif %}"><i data-lucide="layout-dashboard"></i><span class="nav-text">Command Center</span></a>
+    <a href="{{ url_for('admin.issues') }}" class="nav-item {% if ep=='admin.issues' %}active{% endif %}"><i data-lucide="clipboard-list"></i><span class="nav-text">Issues</span></a>
+    <div class="nav-group-label">INTELLIGENCE</div>
+    <a href="{{ url_for('admin.digital_twin') }}" class="nav-item {% if ep=='admin.digital_twin' %}active{% endif %}"><i data-lucide="layers-3"></i><span class="nav-text">Regional Twin</span></a>
+    <a href="{{ url_for('admin.risk_engine') }}" class="nav-item {% if ep=='admin.risk_engine' %}active{% endif %}"><i data-lucide="shield-alert"></i><span class="nav-text">Risk Engine</span></a>
+    <a href="{{ url_for('admin.data_hub') }}" class="nav-item {% if ep=='admin.data_hub' %}active{% endif %}"><i data-lucide="database-zap"></i><span class="nav-text">Data Hub</span></a>
+  {% elif current_user.role == 'ngo' %}
+    <div class="nav-group-label">ORGANIZATION HUB</div>
+    <a href="{{ url_for('ngo.dashboard') }}" class="nav-item {% if ep=='ngo.dashboard' %}active{% endif %}"><i data-lucide="layout-dashboard"></i><span class="nav-text">Organization Hub</span></a>
+    <a href="{{ url_for('ngo.initiatives') }}" class="nav-item {% if ep=='ngo.initiatives' %}active{% endif %}"><i data-lucide="target"></i><span class="nav-text">Initiatives</span></a>
+    <a href="{{ url_for('ngo.volunteers') }}" class="nav-item {% if ep=='ngo.volunteers' %}active{% endif %}"><i data-lucide="users"></i><span class="nav-text">Volunteers</span></a>
+  {% else %}
+    <div class="nav-group-label">FIELD WORKER</div>
+    <a href="{{ url_for('volunteer.dashboard') }}" class="nav-item {% if ep=='volunteer.dashboard' %}active{% endif %}"><i data-lucide="layout-dashboard"></i><span class="nav-text">My Dashboard</span></a>
+    <a href="{{ url_for('volunteer.opportunities') }}" class="nav-item {% if ep=='volunteer.opportunities' %}active{% endif %}"><i data-lucide="search"></i><span class="nav-text">Assignments</span></a>
+  {% endif %}
+  </nav>
+  <div class="sidebar-footer">
+    <div class="workspace-status"><span class="status-dot live"></span><span class="nav-text">Connected workspace</span></div>
+    <div class="user-chip"><div class="user-avatar">{{ current_user.full_name[:1].upper() }}</div><div class="user-chip-copy"><div class="user-name nav-text">{{ current_user.full_name.split()[0] }}</div><div class="user-role nav-text">{{ current_user.role.capitalize() }}</div></div></div>
+    <a href="{{ url_for('auth.logout') }}" class="sidebar-signout"><i data-lucide="log-out"></i><span class="nav-text">Sign out</span></a>
+  </div>
+</aside>

@@ -1,36 +1,26 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="agri">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}NAGARAM — Unified City, Community & Farm Intelligence{% endblock %}</title>
-  <meta name="description" content="{% block meta_desc %}NAGARAM is a unified platform connecting citizen issues, farms, infrastructure, water, field teams and organizations to practical action.{% endblock %}">
+  <meta name="description" content="{% block meta_desc %}NAGARAM connects citizen issues, farms, infrastructure, water, field teams and organizations to practical action.{% endblock %}">
   <meta name="theme-color" content="#1f5a36">
   <link rel="icon" type="image/png" href="{{ url_for('static_files', filename='nagaram-logo.png') }}">
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&family=Noto+Sans+Tamil:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="{{ url_for('static_files', filename='css/variables.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static_files', filename='css/base.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static_files', filename='css/components.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static_files', filename='css/layouts.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static_files', filename='css/pages.css') }}">
-  <style>
-    :root{--font-main:'Noto Sans Tamil','Inter',sans-serif;--font-display:'Noto Sans Tamil','Inter',sans-serif;}
-    body,button,input,textarea,select,option{font-family:var(--font-main)} h1,h2,h3,h4,h5,h6{font-family:var(--font-display)}
-    .nagaram-logo-slot{display:flex!important;align-items:center;justify-content:center;overflow:hidden;background:transparent!important;padding:0!important}.nagaram-logo-slot img{display:block;width:100%;height:100%;object-fit:contain}.loading-logo-image{width:72px;height:72px;margin:0 auto 1rem}
-  </style>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="{{ url_for('static_files', filename='css/variables.css') }}"><link rel="stylesheet" href="{{ url_for('static_files', filename='css/base.css') }}"><link rel="stylesheet" href="{{ url_for('static_files', filename='css/components.css') }}"><link rel="stylesheet" href="{{ url_for('static_files', filename='css/layouts.css') }}"><link rel="stylesheet" href="{{ url_for('static_files', filename='css/pages.css') }}"><link rel="stylesheet" href="{{ url_for('static_files', filename='workspace.css') }}">
+  <style>:root{--font-main:'Noto Sans Tamil','Inter',sans-serif;--font-display:'Noto Sans Tamil','Inter',sans-serif}body,button,input,textarea,select,option{font-family:var(--font-main)}h1,h2,h3,h4,h5,h6{font-family:var(--font-display)}.nagaram-logo-slot{display:flex!important;align-items:center;justify-content:center;overflow:hidden;background:transparent!important;padding:0!important}.nagaram-logo-slot img{display:block;width:100%;height:100%;object-fit:contain}.loading-logo-image{width:72px;height:72px;margin:0 auto 1rem}</style>
   {% block extra_css %}{% endblock %}
 </head>
 <body>
 {% if current_user.is_authenticated %}
 <div class="loading-screen" id="loadingScreen"><div class="loading-logo-image nagaram-logo-slot"><img src="{{ url_for('static_files', filename='nagaram-logo.png') }}" alt="Nagaram logo"></div><div class="loading-bar-wrap"><div class="loading-bar-fill"></div></div><div class="loading-label loading-msg">Preparing your connected workspace...</div></div>
-<div class="app-shell">{% include '_sidebar.html' %}<div class="main-content">{% include '_header.html' %}<main class="page-body">{% with messages=get_flashed_messages(with_categories=true) %}{% if messages %}<div style="margin-bottom:1.25rem;display:flex;flex-direction:column;gap:8px">{% for cat,msg in messages %}<div class="toast toast-{{ cat }}"><i data-lucide="{% if cat=='success' %}check-circle-2{% elif cat=='danger' %}alert-triangle{% elif cat=='warning' %}alert-circle{% else %}info{% endif %}" style="width:16px;height:16px;flex-shrink:0"></i><span>{{ msg }}</span></div>{% endfor %}</div>{% endif %}{% endwith %}{% block content %}{% endblock %}</main></div></div>
+<div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+<div class="app-shell">{% include '_sidebar.html' %}<div class="main-content">{% include '_header.html' %}<main class="page-body">{% with messages=get_flashed_messages(with_categories=true) %}{% if messages %}<div class="flash-stack">{% for cat,msg in messages %}<div class="toast toast-{{ cat }}"><i data-lucide="{% if cat=='success' %}check-circle-2{% elif cat=='danger' %}alert-triangle{% elif cat=='warning' %}alert-circle{% else %}info{% endif %}"></i><span>{{ msg }}</span></div>{% endfor %}</div>{% endif %}{% endwith %}{% block content %}{% endblock %}</main></div></div>
 {% else %}
-{% with messages=get_flashed_messages(with_categories=true) %}{% if messages %}<div style="position:fixed;top:86px;right:24px;z-index:400;display:flex;flex-direction:column;gap:8px">{% for cat,msg in messages %}<div class="toast toast-{{ cat }}"><i data-lucide="info" style="width:15px;height:15px"></i><span>{{ msg }}</span></div>{% endfor %}</div>{% endif %}{% endwith %}{% block public_content %}{% endblock %}
+{% with messages=get_flashed_messages(with_categories=true) %}{% if messages %}<div class="public-flash-stack">{% for cat,msg in messages %}<div class="toast toast-{{ cat }}"><i data-lucide="info"></i><span>{{ msg }}</span></div>{% endfor %}</div>{% endif %}{% endwith %}{% block public_content %}{% endblock %}
 {% endif %}
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script><script src="{{ url_for('static_files', filename='js/particles.js') }}"></script><script src="{{ url_for('static_files', filename='js/charts.js') }}"></script><script src="{{ url_for('static_files', filename='js/maps.js') }}"></script><script src="{{ url_for('static_files', filename='js/app.js') }}"></script>
-<script>document.addEventListener('DOMContentLoaded',()=>{document.querySelectorAll('.brand-logo:not(.brand-logo-image)').forEach(el=>{const mark=(el.textContent||'').trim();if(mark==='U'||mark==='N'){el.textContent='';el.classList.add('nagaram-logo-slot');const img=document.createElement('img');img.src='{{ url_for('static_files', filename='nagaram-logo.png') }}';img.alt='Nagaram logo';el.appendChild(img)}});if(window.lucide)lucide.createIcons()})</script>
-{% block extra_js %}{% endblock %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script><script src="{{ url_for('static_files', filename='js/particles.js') }}"></script><script src="{{ url_for('static_files', filename='js/charts.js') }}"></script><script src="{{ url_for('static_files', filename='js/maps.js') }}"></script><script src="{{ url_for('static_files', filename='js/app.js') }}"></script><script src="{{ url_for('static_files', filename='workspace.js') }}"></script>
+<script>document.addEventListener('DOMContentLoaded',()=>{if(window.lucide)lucide.createIcons()})</script>{% block extra_js %}{% endblock %}
 </body></html>
