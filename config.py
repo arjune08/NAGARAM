@@ -4,7 +4,7 @@ from urllib.parse import urlparse
 
 
 def _database_url():
-    """Choose an explicit persistent database URL without treating optional Prisma URLs as the primary app database."""
+    """Choose the application database URL from explicit persistent sources."""
     candidates = (
         os.environ.get('NAGARAM_DATABASE_URL'),
         os.environ.get('SUPABASE_DB_URL'),
@@ -26,6 +26,10 @@ def _sqlalchemy_url(value):
     if value.startswith('postgresql://'):
         return value.replace('postgresql://', 'postgresql+psycopg2://', 1)
     return value
+
+
+def _is_postgres(url):
+    return bool(url) and url.startswith(('postgresql://', 'postgres://', 'postgresql+psycopg2://'))
 
 
 class Config:
@@ -57,14 +61,14 @@ class Config:
 
     if DATABASE_URL:
         SQLALCHEMY_DATABASE_URI = DATABASE_URL
-        SQLALCHEMY_ENGINE_OPTIONS = {
-            'pool_pre_ping': True,
-            'pool_recycle': 300,
-            'connect_args': {'connect_timeout': 10},
-        }
-        # Direct Supabase connections require TLS unless sslmode is already in the URL.
-        if DATABASE_HOST and 'supabase' in DATABASE_HOST and 'sslmode=' not in DATABASE_URL:
-            SQLALCHEMY_ENGINE_OPTIONS['connect_args']['sslmode'] = 'require'
+        SQLALCHEMY_ENGINE_OPTIONS = {'pool_pre_ping': True, 'pool_recycle': 300}
+        # Driver-specific connect options must only be passed to PostgreSQL.
+        # Passing connect_timeout to a non-Postgres DB-API connection caused
+        # Vercel production requests to fail with a TypeError and HTTP 500.
+        if _is_postgres(DATABASE_URL):
+            SQLALCHEMY_ENGINE_OPTIONS['connect_args'] = {'connect_timeout': 10}
+            if DATABASE_HOST and 'supabase' in DATABASE_HOST and 'sslmode=' not in DATABASE_URL:
+                SQLALCHEMY_ENGINE_OPTIONS['connect_args']['sslmode'] = 'require'
     elif os.environ.get('VERCEL'):
         SQLALCHEMY_DATABASE_URI = 'sqlite:////tmp/nagaram_preview.db'
         SQLALCHEMY_ENGINE_OPTIONS = {}
