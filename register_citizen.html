@@ -1,45 +1,90 @@
 {% extends 'base.html' %}
 
-{% block title %}Citizen Registration - UrbanPulse AI{% endblock %}
+{% block title %}Create Citizen Account — NAGARAM{% endblock %}
+{% block meta_desc %}Create a NAGARAM citizen account to report issues, track requests and access local services.{% endblock %}
+
+{% block extra_css %}
+<style>
+.citizen-auth{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr) minmax(420px,560px);background:#f5f1e7;color:#26352a}
+.citizen-story{position:relative;overflow:hidden;padding:clamp(38px,7vw,92px);display:flex;align-items:center;background:linear-gradient(145deg,#123722,#285a37);color:#fff}
+.citizen-story:before{content:'';position:absolute;inset:auto -15% -22% -15%;height:70%;background:repeating-linear-gradient(170deg,rgba(213,231,153,.15) 0 20px,transparent 21px 44px);transform:rotate(-5deg)}
+.citizen-story:after{content:'';position:absolute;width:360px;height:360px;right:-130px;top:-150px;border-radius:50%;border:1px solid rgba(255,255,255,.14);box-shadow:0 0 0 34px rgba(255,255,255,.035),0 0 0 68px rgba(255,255,255,.02)}
+.citizen-story-inner{position:relative;z-index:1;max-width:620px}
+.citizen-kicker{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid rgba(214,184,105,.35);background:rgba(255,255,255,.06);border-radius:999px;color:#e6d18b;font-size:.72rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
+.citizen-kicker i{width:16px}
+.citizen-story h1{font-size:clamp(2.8rem,5.5vw,5.4rem);line-height:.96;letter-spacing:-.07em;margin:24px 0 18px}
+.citizen-story h1 span{color:#d5b869}
+.citizen-story p{max-width:560px;color:#d4e0d6;line-height:1.8;margin:0}
+.citizen-benefits{display:grid;gap:10px;margin-top:30px}
+.citizen-benefit{display:flex;align-items:center;gap:12px;padding:13px 14px;border:1px solid rgba(255,255,255,.11);background:rgba(255,255,255,.055);border-radius:12px;color:#edf3ed}
+.citizen-benefit i{width:19px;color:#e0c56f;flex:0 0 auto}
+.citizen-form-side{display:grid;place-items:center;padding:38px 28px}
+.citizen-card{width:min(470px,100%)}
+.citizen-brand{display:flex;align-items:center;gap:10px;margin-bottom:25px}
+.citizen-brand img{width:44px;height:44px;object-fit:contain;background:#f3ecd9;border-radius:12px}
+.citizen-brand b{display:block;color:#23452e;font-size:1rem;letter-spacing:.08em}.citizen-brand small{display:block;color:#7a8277;margin-top:2px}
+.citizen-card h2{font-size:2.25rem;color:#213f2a;margin:0 0 7px}.citizen-intro{color:#687267;margin:0 0 24px;line-height:1.65}
+.citizen-progress{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:0 0 25px}.citizen-progress span{height:4px;border-radius:999px;background:#dfe5d9}.citizen-progress span.active{background:#2d673d}
+.citizen-field{margin-bottom:15px}.citizen-field label{display:block;font-size:.78rem;font-weight:900;color:#405044;margin-bottom:7px}.citizen-input{position:relative}.citizen-input>i{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;color:#799075}.citizen-input input{box-sizing:border-box;width:100%;height:50px;padding:0 46px;border:1px solid #d7dbd0;background:#fff;border-radius:11px;color:#26352a;outline:none;font:inherit;transition:border-color .18s,box-shadow .18s}.citizen-input input:focus{border-color:#4d8051;box-shadow:0 0 0 4px rgba(77,128,81,.12)}
+.citizen-password-toggle{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:36px;height:36px;border:0;background:transparent;color:#5e725f;border-radius:8px;cursor:pointer}.citizen-password-toggle:hover{background:#f1f4ed}
+.citizen-actions{display:flex;justify-content:space-between;gap:12px;margin:3px 0 18px;font-size:.72rem;color:#727b72}.citizen-consent{display:flex;align-items:flex-start;gap:8px;line-height:1.45}.citizen-consent input{margin-top:2px;accent-color:#2d673d}.citizen-submit{width:100%;min-height:52px;border:0;border-radius:11px;background:#1e5a35;color:#fff;font-weight:900;font-size:.9rem;cursor:pointer;transition:transform .18s,box-shadow .18s}.citizen-submit:hover{transform:translateY(-1px);box-shadow:0 14px 28px rgba(31,90,54,.18)}.citizen-submit:disabled{opacity:.72;cursor:wait;transform:none}.citizen-status{min-height:20px;margin-top:8px;font-size:.76rem;color:#9c4e3d}.citizen-divider{display:flex;align-items:center;gap:12px;margin:25px 0 15px;color:#8a9289;font-size:.68rem;text-transform:uppercase;letter-spacing:.1em}.citizen-divider:before,.citizen-divider:after{content:'';height:1px;background:#dfdfd7;flex:1}.citizen-login{display:flex;align-items:center;justify-content:center;gap:5px;color:#37603f;font-size:.82rem}.citizen-login a{font-weight:900;color:#1e5a35}.citizen-security{display:flex;gap:8px;align-items:flex-start;margin-top:18px;font-size:.67rem;line-height:1.55;color:#788177}.citizen-security i{width:15px;color:#5b8658;flex:0 0 auto;margin-top:1px}
+@media(max-width:900px){.citizen-auth{grid-template-columns:1fr}.citizen-story{min-height:auto;padding:48px 28px}.citizen-story h1{font-size:3.5rem}.citizen-form-side{padding:34px 20px}.citizen-benefits{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.citizen-benefits{grid-template-columns:1fr}.citizen-story{padding:38px 22px}.citizen-story h1{font-size:3rem}.citizen-form-side{padding:30px 18px}.citizen-actions{flex-direction:column}}
+</style>
+{% endblock %}
 
 {% block public_content %}
-<div class="flex items-center justify-center" style="min-height: 100vh; padding: 2rem; background: var(--bg-primary);">
-  <div class="glass-card" style="width: 100%; max-width: 480px; padding: 2.5rem;">
-    <div style="text-align: center; margin-bottom: 2rem;">
-      <div class="brand-logo" style="width: 44px; height: 44px; font-size: 1.5rem; margin: 0 auto 0.75rem;">U</div>
-      <h2>Register as a Citizen</h2>
-      <p style="font-size: 0.9rem;">Report civic issues, track resolution, and access emergency services</p>
+<div class="citizen-auth">
+  <section class="citizen-story" aria-label="Why create a NAGARAM citizen account">
+    <div class="citizen-story-inner">
+      <div class="citizen-kicker"><i data-lucide="map-pin"></i> CITIZEN PORTAL · LOCAL ACTION</div>
+      <h1>Make your city<br><span>work better.</span></h1>
+      <p>Create one simple account to report civic problems, follow progress and stay connected with the services that matter in your neighbourhood.</p>
+      <div class="citizen-benefits">
+        <div class="citizen-benefit"><i data-lucide="message-square-warning"></i><span>Report roads, water, waste and other civic issues</span></div>
+        <div class="citizen-benefit"><i data-lucide="route"></i><span>Track the status of every request in one place</span></div>
+        <div class="citizen-benefit"><i data-lucide="bell-ring"></i><span>Stay informed as your community requests move forward</span></div>
+      </div>
     </div>
+  </section>
 
-    <form action="{{ url_for('auth.register_citizen') }}" method="POST">
-      <div class="form-group">
-        <label class="form-label">Full Name</label>
-        <input type="text" name="full_name" class="form-control" placeholder="Jane Doe" required>
-      </div>
+  <section class="citizen-form-side">
+    <div class="citizen-card">
+      <div class="citizen-brand"><img src="{{ url_for('static_files', filename='nagaram-logo.png') }}" alt="NAGARAM"><div><b>NAGARAM</b><small>Citizen services, connected</small></div></div>
+      <h2>Create your account</h2>
+      <p class="citizen-intro">It only takes a minute. Your details help us connect your requests to the right local workspace.</p>
+      <div class="citizen-progress" aria-hidden="true"><span class="active"></span><span></span><span></span></div>
 
-      <div class="form-group">
-        <label class="form-label">Email Address</label>
-        <input type="email" name="email" class="form-control" placeholder="jane@example.com" required>
-      </div>
+      <form action="{{ url_for('auth.register_citizen') }}" method="POST" id="citizenRegisterForm" novalidate>
+        <div class="citizen-field"><label for="citizen-name">Full name</label><div class="citizen-input"><i data-lucide="user-round"></i><input id="citizen-name" type="text" name="full_name" placeholder="Your full name" autocomplete="name" required></div></div>
+        <div class="citizen-field"><label for="citizen-email">Email address</label><div class="citizen-input"><i data-lucide="mail"></i><input id="citizen-email" type="email" name="email" placeholder="you@example.com" autocomplete="email" inputmode="email" required></div></div>
+        <div class="citizen-field"><label for="citizen-phone">Phone number <span style="font-weight:500;color:#8a9289">(optional)</span></label><div class="citizen-input"><i data-lucide="phone"></i><input id="citizen-phone" type="tel" name="phone" placeholder="Your phone number" autocomplete="tel" inputmode="tel"></div></div>
+        <div class="citizen-field"><label for="citizen-password">Create password</label><div class="citizen-input"><i data-lucide="lock-keyhole"></i><input id="citizen-password" type="password" name="password" placeholder="At least 6 characters" autocomplete="new-password" minlength="6" required><button class="citizen-password-toggle" type="button" id="citizenPasswordToggle" aria-label="Show password"><i data-lucide="eye"></i></button></div></div>
+        <div class="citizen-actions"><label class="citizen-consent"><input type="checkbox" id="citizenConsent" required><span>I agree to use NAGARAM responsibly for genuine civic requests.</span></label></div>
+        <button class="citizen-submit" type="submit">Create Citizen Account</button>
+        <div class="citizen-status" id="citizenStatus" aria-live="polite"></div>
+      </form>
 
-      <div class="form-group">
-        <label class="form-label">Phone Number</label>
-        <input type="tel" name="phone" class="form-control" placeholder="+1 (555) 019-2831">
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Password</label>
-        <input type="password" name="password" class="form-control" placeholder="••••••••" required>
-      </div>
-
-      <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.8rem;">
-        Create Citizen Account
-      </button>
-    </form>
-
-    <div style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem;" class="text-muted">
-      Already have an account? <a href="{{ url_for('auth.login') }}">Sign In</a>
+      <div class="citizen-divider">Already registered?</div>
+      <div class="citizen-login"><span>Have a NAGARAM account?</span><a href="{{ url_for('auth.login') }}">Sign in</a></div>
+      <div class="citizen-security"><i data-lucide="shield-check"></i><span>Your password is submitted securely to the authentication service. NAGARAM does not display plaintext passwords.</span></div>
     </div>
-  </div>
+  </section>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(()=>{
+  const form=document.getElementById('citizenRegisterForm'), status=document.getElementById('citizenStatus'), pwd=document.getElementById('citizen-password'), toggle=document.getElementById('citizenPasswordToggle');
+  toggle?.addEventListener('click',()=>{const reveal=pwd.type==='password';pwd.type=reveal?'text':'password';toggle.setAttribute('aria-label',reveal?'Hide password':'Show password');toggle.innerHTML=reveal?'<i data-lucide="eye-off"></i>':'<i data-lucide="eye"></i>';window.lucide?.createIcons()});
+  form?.addEventListener('submit',e=>{
+    const name=form.full_name.value.trim(), email=form.email.value.trim(), password=form.password.value, consent=document.getElementById('citizenConsent').checked;
+    if(!name||!email||!password||!consent){e.preventDefault();status.textContent=consent?'Please complete all required fields.':'Please confirm the responsible-use checkbox to continue.';return}
+    if(!/^\S+@\S+\.\S+$/.test(email)){e.preventDefault();status.textContent='Please enter a valid email address.';return}
+    if(password.length<6){e.preventDefault();status.textContent='Your password must be at least 6 characters.';return}
+    const btn=form.querySelector('button[type="submit"]');btn.disabled=true;btn.textContent='Creating your account…';status.style.color='#557b53';status.textContent='Setting up your citizen workspace…';
+  });
+})();
+</script>
 {% endblock %}
