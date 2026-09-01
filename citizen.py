@@ -21,7 +21,7 @@ def dashboard():
     initiatives = Initiative.query.limit(3).all()
 
     return render_template(
-        'citizen/dashboard.html',
+        'citizen_dashboard.html',
         user_complaints=user_complaints,
         active_count=active_count,
         resolved_count=resolved_count,
