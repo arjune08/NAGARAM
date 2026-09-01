@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Citizen Dashboard — NAGARAM{% endblock %}
+{% block meta_desc %}NAGARAM citizen workspace for reporting issues, tracking civic requests and connecting with your city.{% endblock %}
+
+{% block content %}
+<style>
+.citizen-dashboard{--cd-ink:#183524;--cd-muted:#6b776e;--cd-line:#e1e7df;--cd-surface:#fff;--cd-soft:#f4f8f2;max-width:1380px;margin:0 auto}
+.cd-hero{position:relative;overflow:hidden;border-radius:24px;padding:30px 32px;background:linear-gradient(135deg,#173f29,#2d7044);color:#fff;margin-bottom:22px;box-shadow:0 18px 45px rgba(23,63,41,.15)}
+.cd-hero:after{content:'';position:absolute;width:300px;height:300px;right:-90px;top:-130px;border:1px solid rgba(255,255,255,.13);border-radius:50%;box-shadow:0 0 0 30px rgba(255,255,255,.035),0 0 0 60px rgba(255,255,255,.025)}
+.cd-hero-inner{position:relative;z-index:1;display:flex;align-items:flex-end;justify-content:space-between;gap:24px}
+.cd-eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:.68rem;font-weight:900;color:#d9c477;margin-bottom:9px}.cd-hero h1{margin:0 0 8px;font-size:clamp(1.8rem,3vw,2.65rem);letter-spacing:-.04em}.cd-hero p{margin:0;color:#d7e5da;max-width:680px;line-height:1.65}.cd-primary{display:inline-flex;align-items:center;gap:9px;background:#e1c46d;color:#173b27;padding:13px 17px;border-radius:12px;font-weight:900;white-space:nowrap;text-decoration:none}.cd-primary:hover{transform:translateY(-1px);box-shadow:0 10px 25px rgba(0,0,0,.15)}
+.cd-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px}.cd-stat{background:var(--cd-surface);border:1px solid var(--cd-line);border-radius:17px;padding:20px;display:flex;align-items:center;gap:15px;box-shadow:0 7px 22px rgba(30,55,36,.045)}.cd-stat-icon{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;background:var(--cd-soft);color:#34704a}.cd-stat-value{font-size:1.65rem;font-weight:900;color:var(--cd-ink);line-height:1}.cd-stat-label{font-size:.73rem;color:var(--cd-muted);margin-top:6px;font-weight:700}
+.cd-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(300px,.75fr);gap:18px}.cd-card{background:#fff;border:1px solid var(--cd-line);border-radius:19px;padding:21px;box-shadow:0 7px 22px rgba(30,55,36,.045)}.cd-card-head{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:16px}.cd-card h2{font-size:1.05rem;color:var(--cd-ink);margin:0}.cd-link{font-size:.72rem;font-weight:900;color:#34704a;text-decoration:none}.cd-actions{display:grid;grid-template-columns:repeat(2,1fr);gap:11px}.cd-action{display:flex;align-items:center;gap:12px;border:1px solid var(--cd-line);background:#fbfdf9;border-radius:14px;padding:15px;text-decoration:none;color:var(--cd-ink);transition:.18s}.cd-action:hover{border-color:#91ad8e;transform:translateY(-2px);box-shadow:0 9px 20px rgba(30,55,36,.07)}.cd-action-icon{width:39px;height:39px;border-radius:11px;background:#edf5ea;color:#34704a;display:grid;place-items:center;flex:0 0 auto}.cd-action strong{display:block;font-size:.82rem}.cd-action span{display:block;font-size:.67rem;color:var(--cd-muted);margin-top:3px}
+.cd-complaints{display:grid;gap:10px}.cd-ticket{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:14px;border:1px solid #e7ece5;border-radius:13px;background:#fbfcfa;text-decoration:none;color:inherit}.cd-ticket:hover{border-color:#9db79a}.cd-ticket-title{font-size:.8rem;font-weight:800;color:var(--cd-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cd-ticket-id{font-family:monospace;font-size:.64rem;color:#879187;margin-top:4px}.cd-status{font-size:.63rem;font-weight:900;border-radius:999px;padding:6px 9px;white-space:nowrap;background:#edf4ec;color:#3f6c48}.cd-empty{text-align:center;padding:30px 15px;color:var(--cd-muted);font-size:.78rem;background:#f8faf7;border-radius:13px}.cd-empty i{display:block;margin:0 auto 8px;color:#6f8d70}
+.cd-service-list{display:grid;gap:9px}.cd-service{display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:12px;background:#f8faf7}.cd-service i{color:#34704a}.cd-service strong{display:block;font-size:.76rem;color:var(--cd-ink)}.cd-service span{display:block;font-size:.64rem;color:var(--cd-muted);margin-top:2px}.cd-initiative{padding:12px 0;border-bottom:1px solid #edf0eb}.cd-initiative:last-child{border-bottom:0;padding-bottom:0}.cd-initiative strong{display:block;font-size:.77rem;color:var(--cd-ink)}.cd-initiative p{margin:4px 0 0;font-size:.65rem;color:var(--cd-muted);line-height:1.5}
+@media(max-width:900px){.cd-hero-inner{align-items:flex-start;flex-direction:column}.cd-grid{grid-template-columns:1fr}}@media(max-width:620px){.cd-stats{grid-template-columns:1fr}.cd-actions{grid-template-columns:1fr}.cd-hero{padding:24px 20px}.cd-card{padding:17px}}
+</style>
+
+<div class="citizen-dashboard">
+  <section class="cd-hero">
+    <div class="cd-hero-inner">
+      <div>
+        <div class="cd-eyebrow"><i data-lucide="landmark" style="width:13px;height:13px;vertical-align:-2px"></i> Citizen Workspace</div>
+        <h1>Welcome back, {{ current_user.full_name }} 👋</h1>
+        <p>Your city workspace is ready. Report problems, follow your requests and stay connected with local action.</p>
+      </div>
+      <a class="cd-primary" href="{{ url_for('citizen.report_issue') }}"><i data-lucide="plus-circle"></i> Report an issue</a>
+    </div>
+  </section>
+
+  <section class="cd-stats">
+    <div class="cd-stat"><div class="cd-stat-icon"><i data-lucide="clipboard-list"></i></div><div><div class="cd-stat-value">{{ user_complaints|length }}</div><div class="cd-stat-label">Total reports submitted</div></div></div>
+    <div class="cd-stat"><div class="cd-stat-icon"><i data-lucide="loader-circle"></i></div><div><div class="cd-stat-value">{{ active_count }}</div><div class="cd-stat-label">Active requests</div></div></div>
+    <div class="cd-stat"><div class="cd-stat-icon"><i data-lucide="circle-check-big"></i></div><div><div class="cd-stat-value">{{ resolved_count }}</div><div class="cd-stat-label">Resolved reports</div></div></div>
+  </section>
+
+  <div class="cd-grid">
+    <div style="display:grid;gap:18px;min-width:0">
+      <section class="cd-card">
+        <div class="cd-card-head"><h2>Quick actions</h2><span style="font-size:.68rem;color:#8a958b">What would you like to do?</span></div>
+        <div class="cd-actions">
+          <a class="cd-action" href="{{ url_for('citizen.report_issue') }}"><span class="cd-action-icon"><i data-lucide="megaphone"></i></span><span><strong>Report a civic issue</strong><span>Roads, water, waste & more</span></span></a>
+          <a class="cd-action" href="{{ url_for('citizen.my_complaints') }}"><span class="cd-action-icon"><i data-lucide="route"></i></span><span><strong>Track my reports</strong><span>See status and updates</span></span></a>
+          <a class="cd-action" href="{{ url_for('citizen.city_map') }}"><span class="cd-action-icon"><i data-lucide="map"></i></span><span><strong>Explore city map</strong><span>View local civic activity</span></span></a>
+          <a class="cd-action" href="{{ url_for('citizen.emergency') }}"><span class="cd-action-icon"><i data-lucide="siren"></i></span><span><strong>Emergency services</strong><span>Find important local support</span></span></a>
+        </div>
+      </section>
+
+      <section class="cd-card">
+        <div class="cd-card-head"><h2>My latest reports</h2><a class="cd-link" href="{{ url_for('citizen.my_complaints') }}">View all →</a></div>
+        <div class="cd-complaints">
+          {% for complaint in user_complaints[:5] %}
+          <a class="cd-ticket" href="{{ url_for('citizen.complaint_detail', id=complaint.id) }}"><div style="min-width:0"><div class="cd-ticket-title">{{ complaint.title }}</div><div class="cd-ticket-id">{{ complaint.ticket_id }}</div></div><span class="cd-status">{{ complaint.status }}</span></a>
+          {% else %}
+          <div class="cd-empty"><i data-lucide="inbox"></i><strong>No reports yet</strong><br>When you report a civic issue, it will appear here.</div>
+          {% endfor %}
+        </div>
+      </section>
+    </div>
+
+    <aside style="display:grid;gap:18px;align-content:start">
+      <section class="cd-card"><div class="cd-card-head"><h2>Emergency services</h2><a class="cd-link" href="{{ url_for('citizen.emergency') }}">Open →</a></div><div class="cd-service-list">{% for service in emergency_services %}<div class="cd-service"><i data-lucide="phone-call" style="width:17px"></i><div><strong>{{ service.name }}</strong><span>{{ service.phone }}</span></div></div>{% else %}<div class="cd-empty">Emergency information is being prepared.</div>{% endfor %}</div></section>
+      <section class="cd-card"><div class="cd-card-head"><h2>Community initiatives</h2><a class="cd-link" href="{{ url_for('citizen.community') }}">Explore →</a></div>{% for initiative in initiatives %}<div class="cd-initiative"><strong>{{ initiative.title }}</strong><p>{{ initiative.description|truncate(90) }}</p></div>{% else %}<div class="cd-empty">No community updates right now.</div>{% endfor %}</section>
+    </aside>
+  </div>
+</div>
+{% endblock %}
