@@ -55,7 +55,19 @@ def create_app():
 
     @app.route('/static/<path:filename>')
     def static_files(filename):
-        return send_from_directory(app.root_path, filename)
+        """Serve the repository's flat static assets.
+
+        The project historically used both ``/static/foo.css`` and
+        ``/static/css/foo.css`` style URLs. The repository stores CSS/JS at
+        its root, so accept both forms to keep older templates working while
+        new templates use the canonical root asset names.
+        """
+        normalized = filename.replace('\\', '/')
+        for prefix in ('css/', 'js/'):
+            if normalized.startswith(prefix):
+                normalized = normalized[len(prefix):]
+                break
+        return send_from_directory(app.root_path, normalized)
 
     @app.route('/favicon.ico')
     @app.route('/favicon.png')
@@ -104,8 +116,6 @@ def create_app():
                     role=metadata.get('role') or 'citizen',
                     phone=metadata.get('phone') or ''
                 )
-                # Supabase validates credentials; this local hash is never used
-                # for remote-session restoration.
                 user.set_password(os.urandom(32).hex())
                 db.session.add(user)
                 db.session.flush()
